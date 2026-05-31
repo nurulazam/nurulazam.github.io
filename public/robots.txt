@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nurulazam.github.io/sitemap-index.xml

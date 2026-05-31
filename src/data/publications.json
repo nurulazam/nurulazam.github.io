@@ -1,0 +1,9 @@
+{
+  "note": "PLACEHOLDER subset — verify against Google Scholar before publishing. Do not invent entries or citation counts.",
+  "selected": [
+    { "year": 2023, "authors": "N. Azam, M. Mahjouri-Samani", "title": "Time-Resolved Growth of 2D WSe2 Monolayer Crystals", "venue": "ACS Nano", "doi": "" },
+    { "year": 2022, "authors": "N. Azam, et al.", "title": "Laser-Assisted Synthesis of Monolayer 2D MoSe2 Crystals with Tunable Vacancy Concentrations", "venue": "ACS Applied Nano Materials", "doi": "" },
+    { "year": 2021, "authors": "P. Hafshejani, N. Azam, et al.", "title": "2D-Material Based FET Biosensor for Detecting COVID-19 Virus (SARS-CoV-2)", "venue": "ACS Nano", "doi": "" },
+    { "year": 2019, "authors": "N. Azam, et al.", "title": "Accelerated synthesis of atomically thin 2D quantum materials by a novel laser-assisted synthesis technique", "venue": "2D Materials", "doi": "" }
+  ]
+}

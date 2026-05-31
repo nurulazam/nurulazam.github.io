@@ -1,0 +1,60 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+import { PRIMARY_CTA } from "../config/site";
+
+interface Props {
+  title: string;
+  description?: string;
+  date?: Date;
+  updated?: Date;
+  tags?: string[];
+  /** e.g. { label: 'Writing', href: '/writing/' } for the breadcrumb + back link. */
+  section: { label: string; href: string };
+}
+const { title, description, date, updated, tags = [], section } = Astro.props;
+const fmt = (d?: Date) =>
+  d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : undefined;
+---
+<BaseLayout title={title} description={description}>
+  <article class="container article">
+    <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: section.label, href: section.href }, { label: title }]} />
+
+    <header class="article__head">
+      <h1>{title}</h1>
+      {description && <p class="lede">{description}</p>}
+      <div class="meta ui">
+        {date && <time datetime={date.toISOString()}>{fmt(date)}</time>}
+        {updated && <span>· updated {fmt(updated)}</span>}
+        {tags.length > 0 && <span class="tags">{tags.map((t) => <span class="tag">{t}</span>)}</span>}
+      </div>
+    </header>
+
+    <div class="prose article__body">
+      <slot />
+    </div>
+
+    <!-- Consistent affordances on EVERY article -->
+    <footer class="article__foot ui">
+      <a href={section.href}>← Back to {section.label}</a>
+      <a href={PRIMARY_CTA.href}>Questions about this? {PRIMARY_CTA.label} →</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .article { padding-block: var(--space-xl); }
+  .article__head { max-width: var(--measure); margin-bottom: var(--space-l); }
+  .article__head h1 { margin-top: var(--space-s); }
+  .lede { font-size: var(--step-1); color: var(--ink-soft); }
+  .meta { display: flex; flex-wrap: wrap; gap: var(--space-xs); align-items: center; font-size: var(--step--1); color: var(--ink-soft); }
+  .tags { display: inline-flex; gap: var(--space-2xs); flex-wrap: wrap; }
+  .tag { background: var(--accent-wash); color: var(--accent-ink); padding: 0 var(--space-2xs); border-radius: var(--radius); }
+  .article__foot {
+    max-width: var(--measure); margin-top: var(--space-xl); padding-top: var(--space-m);
+    border-top: 1px solid var(--rule); display: flex; flex-wrap: wrap; gap: var(--space-m);
+    justify-content: space-between; font-size: var(--step--1);
+  }
+  .article__foot a { color: var(--ink-soft); text-decoration: none; }
+  .article__foot a:hover { color: var(--ink); }
+</style>

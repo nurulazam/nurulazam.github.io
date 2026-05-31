@@ -1,0 +1,81 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { SITE } from "../config/site";
+import { getCollection } from "astro:content";
+
+// Latest writing for the home feed (newest first, no drafts).
+const posts = (await getCollection("writing", ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const fmt = (d: Date) => d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+
+// Identity cards — the bridge, in three pillars.
+const pillars = [
+  { eyebrow: "Synthesis", title: "Quantum Materials Growth", body: "MBE and laser-assisted synthesis of 2D, magnetic, and topological materials." },
+  { eyebrow: "Characterisation", title: "Spectroscopy & Momentum Microscopy", body: "Band structure, defects, and dynamics via momentum microscopy, Raman, and PL." },
+  { eyebrow: "Computation", title: "Scientific Software & AI", body: "Instrument control, data pipelines, and AI-guided analysis for materials discovery." },
+];
+---
+<BaseLayout>
+  <section class="hero container lattice-bg">
+    <p class="eyebrow">Quantum materials · {SITE.author}</p>
+    <h1 class="hero__title">{SITE.identity}</h1>
+    <!-- TASK 4 will replace this slot with the published-work growth/vacancy animation. -->
+    <div class="hero__media" aria-hidden="true"><span class="placeholder ui">[ signature animation — Task 4 ]</span></div>
+  </section>
+
+  <section class="container pillars" aria-label="What I do">
+    {pillars.map((p) => (
+      <article class="pillar">
+        <p class="eyebrow">{p.eyebrow}</p>
+        <h2 class="pillar__title">{p.title}</h2>
+        <p class="pillar__body">{p.body}</p>
+      </article>
+    ))}
+  </section>
+
+  <section class="container latest" aria-label="Latest writing">
+    <div class="latest__head">
+      <h2>Latest writing</h2>
+      <a class="ui" href="/writing/">All writing →</a>
+    </div>
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <a href={`/writing/${post.id}/`}>
+            <span class="post-list__cat eyebrow">{post.data.category}</span>
+            <span class="post-list__title">{post.data.title}</span>
+            <time class="ui" datetime={post.data.date.toISOString()}>{fmt(post.data.date)}</time>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero { padding-block: var(--space-2xl) var(--space-xl); }
+  .hero__title { max-width: 18ch; margin-top: var(--space-s); }
+  .hero__media {
+    margin-top: var(--space-l); aspect-ratio: 16 / 7; border: 1px dashed var(--rule);
+    border-radius: var(--radius-lg); display: grid; place-items: center;
+  }
+  .placeholder { color: var(--ink-soft); font-size: var(--step--1); }
+
+  .pillars { display: grid; gap: var(--space-m); grid-template-columns: repeat(3, 1fr); margin-top: var(--space-xl); }
+  .pillar { padding: var(--space-m); border: 1px solid var(--rule); border-radius: var(--radius-lg); background: var(--surface); }
+  .pillar__title { font-size: var(--step-1); margin-top: var(--space-2xs); }
+  .pillar__body { color: var(--ink-soft); margin: 0; }
+
+  .latest { margin-top: var(--space-2xl); }
+  .latest__head { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-m); }
+  .latest__head a { font-size: var(--step--1); color: var(--ink-soft); text-decoration: none; }
+  .post-list { list-style: none; margin: var(--space-m) 0 0; padding: 0; }
+  .post-list li + li { border-top: 1px solid var(--rule); }
+  .post-list a { display: grid; gap: var(--space-3xs); padding: var(--space-m) 0; text-decoration: none; color: var(--ink); }
+  .post-list__title { font-family: var(--font-display); font-size: var(--step-1); }
+  .post-list time { color: var(--ink-soft); font-size: var(--step--1); }
+
+  @media (max-width: 820px) { .pillars { grid-template-columns: 1fr; } }
+</style>
