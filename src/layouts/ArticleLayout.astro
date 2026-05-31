@@ -11,16 +11,27 @@ interface Props {
   tags?: string[];
   /** e.g. { label: 'Writing', href: '/writing/' } for the breadcrumb + back link. */
   section: { label: string; href: string };
+  /** Optional sub-grouping (e.g. a writing category). Shown as an eyebrow and
+      used for the "back" link, which deep-links to the filtered section index. */
+  category?: string;
 }
-const { title, description, date, updated, tags = [], section } = Astro.props;
+const { title, description, date, updated, tags = [], section, category } = Astro.props;
 const fmt = (d?: Date) =>
-  d ? d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : undefined;
+  d
+    ? d.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" })
+    : undefined;
+
+const backLabel = category ?? section.label;
+const backHref = category
+  ? `${section.href}#cat=${encodeURIComponent(category)}`
+  : section.href;
 ---
 <BaseLayout title={title} description={description}>
   <article class="container article">
     <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: section.label, href: section.href }, { label: title }]} />
 
     <header class="article__head">
+      {category && <p class="eyebrow">{category}</p>}
       <h1>{title}</h1>
       {description && <p class="lede">{description}</p>}
       <div class="meta ui">
@@ -36,7 +47,7 @@ const fmt = (d?: Date) =>
 
     <!-- Consistent affordances on EVERY article -->
     <footer class="article__foot ui">
-      <a href={section.href}>← Back to {section.label}</a>
+      <a href={backHref}>← Back to {backLabel}</a>
       <a href={PRIMARY_CTA.href}>Questions about this? {PRIMARY_CTA.label} →</a>
     </footer>
   </article>

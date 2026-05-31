@@ -1,0 +1,26 @@
+---
+import { getCollection, render } from "astro:content";
+import ArticleLayout from "../../layouts/ArticleLayout.astro";
+
+// Phase 1: drafts are included so placeholder/example posts render in the
+// static preview. Add `.filter(({ data }) => !data.draft)` once real content
+// lands and drafts should stay unpublished.
+export async function getStaticPaths() {
+  const posts = await getCollection("writing");
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+<ArticleLayout
+  title={post.data.title}
+  description={post.data.description}
+  date={post.data.date}
+  updated={post.data.updated}
+  tags={post.data.tags}
+  category={post.data.category}
+  section={{ label: "Writing", href: "/writing/" }}
+>
+  <Content />
+</ArticleLayout>

@@ -1,0 +1,208 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { WRITING_CATEGORIES } from "../../config/site";
+import { getCollection } from "astro:content";
+
+// Phase 1: drafts included (clearly badged) so the example renders. Switch to
+// `(await getCollection("writing", ({ data }) => !data.draft))` for launch.
+const posts = (await getCollection("writing")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+// Only offer filters for categories that actually have posts, in canonical order.
+const present = WRITING_CATEGORIES.filter((c) =>
+  posts.some((p) => p.data.category === c)
+);
+
+const fmt = (d: Date) =>
+  d.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+---
+<BaseLayout title="Writing" description="Research highlights, technique explainers, mentoring philosophy, field notes, and news.">
+  <div class="container writing">
+    <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: "Writing" }]} />
+
+    <header class="writing__head">
+      <h1>Writing</h1>
+      <p class="lede">
+        Research highlights, technique explainers, mentoring philosophy, field
+        notes, and news from the lab.
+      </p>
+    </header>
+
+    {/* Filter toolbar — hidden until JS upgrades it, so no dead controls without JS. */}
+    {present.length > 0 && (
+      <div class="filters" role="group" aria-label="Filter posts by category" hidden>
+        <button type="button" class="filter" data-cat="all" aria-pressed="true">All</button>
+        {present.map((c) => (
+          <button type="button" class="filter" data-cat={c} aria-pressed="false">{c}</button>
+        ))}
+      </div>
+    )}
+
+    {posts.length > 0 ? (
+      <ol class="writing-list" id="writing-list">
+        {posts.map((post) => (
+          <li class="entry" data-category={post.data.category}>
+            <div class="entry__meta ui">
+              <span class="entry__cat eyebrow">{post.data.category}</span>
+              {post.data.draft && <span class="badge">Draft</span>}
+              <time datetime={post.data.date.toISOString()}>{fmt(post.data.date)}</time>
+            </div>
+            <h2 class="entry__title">
+              <a href={`/writing/${post.id}/`}>{post.data.title}</a>
+            </h2>
+            <p class="entry__desc">{post.data.description}</p>
+          </li>
+        ))}
+      </ol>
+    ) : (
+      <p class="empty ui">No posts published yet — check back soon.</p>
+    )}
+
+    <p class="empty ui" id="filter-empty" hidden>No posts in this category yet.</p>
+    <p class="sr-only" role="status" aria-live="polite" id="filter-status"></p>
+  </div>
+</BaseLayout>
+
+<style>
+  .writing { padding-block: var(--space-xl); }
+  .writing__head { max-width: var(--measure); margin-block: var(--space-m) var(--space-l); }
+  .writing__head h1 { margin-top: var(--space-2xs); }
+  .lede { font-size: var(--step-1); color: var(--ink-soft); margin: 0; }
+
+  /* ── Filter toolbar ── */
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    margin-bottom: var(--space-l);
+    padding-bottom: var(--space-m);
+    border-bottom: 1px solid var(--rule);
+  }
+  .filter {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 99px;
+    padding: var(--space-2xs) var(--space-s);
+    min-height: 44px;
+    cursor: pointer;
+    transition: color var(--transition-base), border-color var(--transition-base),
+      background var(--transition-base);
+  }
+  .filter:hover { color: var(--ink); border-color: var(--ink-soft); }
+  .filter[aria-pressed="true"] {
+    color: var(--bg);
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* ── Post list ── */
+  .writing-list { list-style: none; margin: 0; padding: 0; }
+  .entry {
+    position: relative;
+    padding-block: var(--space-l);
+    border-top: 1px solid var(--rule);
+  }
+  .entry:first-child { border-top: none; padding-top: 0; }
+  .entry__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs) var(--space-s);
+    margin-bottom: var(--space-2xs);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+  .entry__cat { color: var(--accent-ink); }
+  .entry__title {
+    font-size: var(--step-2);
+    margin: 0 0 var(--space-2xs);
+  }
+  .entry__title a {
+    color: var(--ink);
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+  /* Stretched link: whole card is clickable, but AT sees a single link. */
+  .entry__title a::after { content: ""; position: absolute; inset: 0; }
+  .entry:hover .entry__title a { color: var(--accent-ink); }
+  .entry__desc {
+    max-width: var(--measure);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  .badge {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    font-weight: 500;
+    padding: 1px var(--space-xs);
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+    border-radius: var(--radius);
+    line-height: 1.6;
+  }
+
+  .empty { color: var(--ink-soft); font-style: italic; padding-block: var(--space-m); }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+</style>
+
+<script>
+  // Progressive enhancement: reveal the filter toolbar and wire up category filtering.
+  // Without JS the full list shows and the toolbar stays hidden — no dead controls.
+  const filters = document.querySelector<HTMLElement>(".filters");
+  const list = document.getElementById("writing-list");
+
+  if (filters && list) {
+    const buttons = Array.from(filters.querySelectorAll<HTMLButtonElement>(".filter"));
+    const items = Array.from(list.querySelectorAll<HTMLLIElement>(".entry"));
+    const empty = document.getElementById("filter-empty");
+    const status = document.getElementById("filter-status");
+    const known = new Set(buttons.map((b) => b.dataset.cat));
+
+    function apply(cat: string, announce: boolean) {
+      let shown = 0;
+      items.forEach((li) => {
+        const match = cat === "all" || li.dataset.category === cat;
+        li.hidden = !match;
+        if (match) shown++;
+      });
+      buttons.forEach((b) =>
+        b.setAttribute("aria-pressed", String(b.dataset.cat === cat))
+      );
+      if (empty) empty.hidden = shown > 0;
+      if (announce && status) {
+        const where = cat === "all" ? "" : ` in ${cat}`;
+        status.textContent = `Showing ${shown} ${shown === 1 ? "post" : "posts"}${where}.`;
+      }
+    }
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const cat = btn.dataset.cat ?? "all";
+        apply(cat, true);
+        // Keep the URL shareable / consistent with article "back to category" links.
+        const url = cat === "all" ? location.pathname : `#cat=${encodeURIComponent(cat)}`;
+        history.replaceState(null, "", url);
+      });
+    });
+
+    filters.hidden = false;
+
+    // Honour a #cat=… deep link (e.g. an article's "back to category" affordance).
+    let initial = "all";
+    if (location.hash.startsWith("#cat=")) {
+      const cat = decodeURIComponent(location.hash.slice(5));
+      if (known.has(cat)) initial = cat;
+    }
+    if (initial !== "all") apply(initial, false);
+  }
+</script>

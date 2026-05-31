@@ -23,7 +23,7 @@ const pubs = pubsData.selected;
 const pubNote: string = (pubsData as { note: string; selected: typeof pubs }).note;
 
 const fmt = (d: Date) =>
-  d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
+  d.toLocaleDateString("en-US", { year: "numeric", month: "short", timeZone: "UTC" });
 
 const pillars = [
   {
