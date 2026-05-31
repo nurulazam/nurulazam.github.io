@@ -48,8 +48,19 @@ const pillars = [
 
   <!-- ① Hero identity + animation slot ------------------------------------ -->
   <section class="hero container lattice-bg">
-    <p class="eyebrow">Quantum materials · {SITE.author}</p>
-    <h1 class="hero__title">{SITE.identity}</h1>
+    <div class="hero__inner">
+      <div class="hero__text">
+        <p class="eyebrow">Quantum materials · {SITE.author}</p>
+        <h1 class="hero__title">{SITE.identity}</h1>
+      </div>
+      <img
+        src="/images/azam_headshot.png"
+        alt="Dr. Nurul Azam"
+        class="hero__photo"
+        width="280"
+        height="323"
+      />
+    </div>
     <HeroAnimation />
   </section>
 
@@ -281,9 +292,29 @@ const pillars = [
   .hero {
     padding-block: var(--space-2xl) var(--space-xl);
   }
+  .hero__inner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-l);
+  }
+  .hero__text {
+    flex: 1;
+  }
   .hero__title {
     max-width: 18ch;
     margin-top: var(--space-s);
+  }
+  .hero__photo {
+    width: 280px;
+    height: auto;
+    flex-shrink: 0;
+    border-radius: var(--radius-lg);
+  }
+
+  @media (max-width: 640px) {
+    .hero__inner { flex-direction: column-reverse; gap: var(--space-m); }
+    .hero__photo { width: 120px; }
   }
 
   /* ── ② Pillars ─────────────────────────────────────────────────────────── */
