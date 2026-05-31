@@ -1,0 +1,210 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { getCollection } from "astro:content";
+
+// Phase 1: drafts included (clearly badged) so the example renders. Switch to
+// `(await getCollection("software", ({ data }) => !data.draft))` for launch.
+const entries = (await getCollection("software")).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+// Order matters: lead with the scientific tooling so the section reads as
+// research software, not a career pivot. Labels/notes reinforce that framing.
+const KIND_ORDER = [
+  {
+    kind: "Research Tools & Scientific Software",
+    label: "Research Tools & Scientific Software",
+    note: "Acquisition, analysis, and visualisation tools that turn raw measurements into physics.",
+  },
+  { kind: "Project", label: "Projects", note: undefined },
+  {
+    kind: "Build Log",
+    label: "Build logs",
+    note: "Engineering notes from building these tools.",
+  },
+] as const;
+
+const sections = KIND_ORDER.map((k) => ({
+  ...k,
+  entries: entries.filter((e) => e.data.kind === k.kind),
+})).filter((s) => s.entries.length > 0);
+
+const slug = (s: string) =>
+  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+---
+<BaseLayout title="Software" description="Scientific software and research tools: instrument control, data pipelines, and analysis.">
+  <div class="container software">
+    <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: "Software" }]} />
+
+    <header class="software__head">
+      <h1>Software</h1>
+      <p class="lede">
+        Software built in service of the science — instrument control, data
+        pipelines, and analysis that turn measurements into physics.
+      </p>
+    </header>
+
+    {sections.length > 0 ? (
+      sections.map((section) => (
+        <section class="kind-section" id={`cat-${slug(section.kind)}`} data-kind={section.kind}>
+          <header class="kind-section__head">
+            <h2 class="kind-section__title">{section.label}</h2>
+            {section.note && <p class="kind-section__note">{section.note}</p>}
+          </header>
+
+          <ul class="software-grid">
+            {section.entries.map((entry) => (
+              <li class="card">
+                <div class="card__body">
+                  {entry.data.draft && (
+                    <div class="card__badges">
+                      <span class="badge">Draft</span>
+                    </div>
+                  )}
+                  <h3 class="card__title">
+                    <a href={`/software/${entry.id}/`}>{entry.data.title}</a>
+                  </h3>
+                  <p class="card__desc">{entry.data.description}</p>
+
+                  {entry.data.stack.length > 0 && (
+                    <ul class="card__tags" aria-label="Tech stack">
+                      {entry.data.stack.map((s) => <li class="tag">{s}</li>)}
+                    </ul>
+                  )}
+
+                  <div class="card__foot">
+                    {entry.data.repo && (
+                      <a
+                        class="card__repo ui"
+                        href={entry.data.repo}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Repository ↗
+                      </a>
+                    )}
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    ) : (
+      <p class="empty ui">No software published yet — check back soon.</p>
+    )}
+  </div>
+</BaseLayout>
+
+<style>
+  .software { padding-block: var(--space-xl); }
+  .software__head { max-width: var(--measure); margin-block: var(--space-m) var(--space-xl); }
+  .software__head h1 { margin-top: var(--space-2xs); }
+  .lede { font-size: var(--step-1); color: var(--ink-soft); margin: 0; }
+
+  /* ── Sections by kind ── */
+  .kind-section { margin-bottom: var(--space-2xl); }
+  .kind-section:last-child { margin-bottom: 0; }
+  .kind-section__head {
+    max-width: var(--measure);
+    padding-bottom: var(--space-2xs);
+    margin-bottom: var(--space-l);
+    border-bottom: 1px solid var(--rule);
+  }
+  .kind-section__title { font-size: var(--step-2); margin: 0; }
+  .kind-section__note {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    margin: var(--space-2xs) 0 0;
+  }
+
+  /* ── Card grid (uniform cards) ── */
+  .software-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-l);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 640px) { .software-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 980px) { .software-grid { grid-template-columns: repeat(3, 1fr); } }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    transition: border-color var(--transition-base);
+  }
+  .card:hover { border-color: var(--ink-soft); }
+  .card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--space-m);
+  }
+  .card__badges { display: flex; flex-wrap: wrap; gap: var(--space-2xs); }
+  .card__title { font-size: var(--step-1); margin: var(--space-3xs) 0 0; }
+  .card__title a {
+    color: var(--ink);
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+  .card__title a:hover { color: var(--accent-ink); }
+  .card__desc { color: var(--ink-soft); margin: 0; font-size: var(--step-0); }
+
+  .card__tags {
+    list-style: none;
+    margin: var(--space-2xs) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+  .tag {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    padding: var(--space-3xs) var(--space-xs);
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    border-radius: 99px;
+    line-height: 1.5;
+  }
+
+  /* Repo link pinned to the bottom keeps cards visually uniform. */
+  .card__foot { margin-top: auto; padding-top: var(--space-s); }
+  .card__repo {
+    font-size: var(--step--1);
+    color: var(--accent-ink);
+    text-decoration: none;
+  }
+  .card__repo:hover { text-decoration: underline; }
+
+  .badge {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    font-weight: 500;
+    padding: 1px var(--space-xs);
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+    border-radius: var(--radius);
+    line-height: 1.6;
+  }
+
+  .empty { color: var(--ink-soft); font-style: italic; padding-block: var(--space-m); }
+</style>
+
+<script>
+  // Honour an article's "← Back to {kind}" deep link (#cat=…) by scrolling to
+  // that kind's section. Mirrors the writing index's #cat= behaviour.
+  if (location.hash.startsWith("#cat=")) {
+    const kind = decodeURIComponent(location.hash.slice(5));
+    const target = document.querySelector(`.kind-section[data-kind="${CSS.escape(kind)}"]`);
+    target?.scrollIntoView({ block: "start" });
+  }
+</script>
