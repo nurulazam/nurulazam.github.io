@@ -38,7 +38,7 @@
   --ink:         #1B1A17;
   --ink-soft:    #57534E;
   --rule:        #E7E1D6;
-  --accent:      #D14E1D;  /* luminous persimmon — a warm nod to TMDC photoluminescence */
+  --accent:      #C44718;  /* luminous persimmon — a warm nod to TMDC photoluminescence (AA: 4.68:1 for text on accent) */
   --accent-ink:  #9E3A14;  /* accent that stays legible as text on paper */
   --accent-wash: #FBEADF;  /* faint accent fill */
   --lattice:     rgba(27, 26, 23, 0.045); /* hex-lattice motif tint */
