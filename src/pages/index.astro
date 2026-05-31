@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import HeroAnimation from "../components/HeroAnimation.astro";
 import { SITE, PRIMARY_CTA } from "../config/site";
 import { getCollection } from "astro:content";
 import pubsData from "../data/publications.json";
@@ -49,10 +50,7 @@ const pillars = [
   <section class="hero container lattice-bg">
     <p class="eyebrow">Quantum materials · {SITE.author}</p>
     <h1 class="hero__title">{SITE.identity}</h1>
-    <!-- Task 4 replaces this slot with the published growth/vacancy animation. -->
-    <div class="hero__animation" aria-hidden="true">
-      <span class="placeholder ui">[ Growth / vacancy signature animation — Task 4 ]</span>
-    </div>
+    <HeroAnimation />
   </section>
 
   <!-- ② Three identity cards --------------------------------------------- -->
@@ -286,15 +284,6 @@ const pillars = [
   .hero__title {
     max-width: 18ch;
     margin-top: var(--space-s);
-  }
-  .hero__animation {
-    margin-top: var(--space-l);
-    aspect-ratio: 16 / 7;
-    border: 1px dashed var(--rule);
-    border-radius: var(--radius-lg);
-    display: grid;
-    place-items: center;
-    background: var(--surface);
   }
 
   /* ── ② Pillars ─────────────────────────────────────────────────────────── */

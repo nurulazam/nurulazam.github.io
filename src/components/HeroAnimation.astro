@@ -1,0 +1,283 @@
+---
+/*
+  Signature hero motif — an interactive monolayer-TMDC honeycomb lattice.
+
+  Grounded ONLY in the owner's published work:
+    • "Laser-Assisted Synthesis of Monolayer 2D MoSe2 Crystals with Tunable
+       Vacancy Concentrations" (2022) → the vacancy-engineering interaction.
+    • "Time-Resolved Growth of 2D WSe2 Monolayer Crystals" (2023) → atoms
+       nucleate (staggered entrance) and re-grow after a vacancy is created.
+
+  Deliberately NO AI-feedback-loop / pipeline stage (that work is unpublished).
+
+  Lattice geometry is generated here at build time and emitted as static SVG.
+  Interactivity is a progressive enhancement: it only switches on for fine
+  pointers, and never under prefers-reduced-motion. The figure is decorative
+  (aria-hidden) — the identity message lives in the page <h1> and cards.
+*/
+
+const SQRT3 = Math.sqrt(3);
+const BOND = 1; // bond length, lattice units
+// Honeycomb = triangular lattice (vectors t1,t2) + 2-atom basis (metal, chalcogen).
+const t1: [number, number] = [1.5 * BOND, (SQRT3 / 2) * BOND];
+const t2: [number, number] = [1.5 * BOND, -(SQRT3 / 2) * BOND];
+const basis = [
+  { dx: 0, dy: 0, kind: "m" as const }, // metal (e.g. Mo / W)
+  { dx: BOND, dy: 0, kind: "x" as const }, // chalcogen (e.g. Se)
+];
+
+// Window kept ≈ 16:7 to match the hero slot's aspect ratio.
+const HALF_W = 5.25;
+const HALF_H = 2.3;
+const SCALE = 90; // lattice units → SVG user units
+
+type Atom = { i: number; x: number; y: number; kind: "m" | "x" };
+const atoms: Atom[] = [];
+const seen = new Set<string>();
+let idx = 0;
+for (let n = -7; n <= 7; n++) {
+  for (let m = -7; m <= 7; m++) {
+    for (const b of basis) {
+      const lx = n * t1[0] + m * t2[0] + b.dx;
+      const ly = n * t1[1] + m * t2[1] + b.dy;
+      if (Math.abs(lx) > HALF_W || Math.abs(ly) > HALF_H) continue;
+      const key = `${lx.toFixed(3)},${ly.toFixed(3)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      atoms.push({ i: idx++, x: lx * SCALE, y: ly * SCALE, kind: b.kind });
+    }
+  }
+}
+
+// Bonds: nearest-neighbour pairs (≈ one bond length apart).
+const BOND_PX = BOND * SCALE;
+type Bond = { a: number; b: number; x1: number; y1: number; x2: number; y2: number };
+const bonds: Bond[] = [];
+for (let i = 0; i < atoms.length; i++) {
+  for (let j = i + 1; j < atoms.length; j++) {
+    const d = Math.hypot(atoms[i].x - atoms[j].x, atoms[i].y - atoms[j].y);
+    if (Math.abs(d - BOND_PX) < BOND_PX * 0.12) {
+      bonds.push({
+        a: atoms[i].i, b: atoms[j].i,
+        x1: atoms[i].x, y1: atoms[i].y,
+        x2: atoms[j].x, y2: atoms[j].y,
+      });
+    }
+  }
+}
+
+// ViewBox from actual extents + padding.
+const PAD = 22;
+const xs = atoms.map((a) => a.x);
+const ys = atoms.map((a) => a.y);
+const minX = Math.min(...xs) - PAD;
+const minY = Math.min(...ys) - PAD;
+const vbW = Math.max(...xs) + PAD - minX;
+const vbH = Math.max(...ys) + PAD - minY;
+const viewBox = `${minX} ${minY} ${vbW} ${vbH}`;
+
+// Nucleation order: from centre outward (for the staggered "growth" entrance).
+const cx = minX + vbW / 2;
+const cy = minY + vbH / 2;
+const order = new Map<number, number>();
+[...atoms]
+  .sort((p, q) => Math.hypot(p.x - cx, p.y - cy) - Math.hypot(q.x - cx, q.y - cy))
+  .forEach((a, k) => order.set(a.i, k));
+
+// Two intrinsic ("as-grown") vacancies so the motif reads with no JS / on touch.
+const nearest = (tx: number, ty: number, kind: "m" | "x") => {
+  let best = -1;
+  let bd = Infinity;
+  for (const a of atoms) {
+    if (a.kind !== kind) continue;
+    const d = Math.hypot(a.x - tx, a.y - ty);
+    if (d < bd) { bd = d; best = a.i; }
+  }
+  return best;
+};
+const seeded = new Set<number>([nearest(150, -55, "m"), nearest(-205, 70, "x")]);
+
+const R_M = 12;
+const R_X = 7;
+const R_RING = 15;
+const R_HIT = 20;
+---
+
+<figure class="hero-lattice" aria-hidden="true">
+  <svg viewBox={viewBox} preserveAspectRatio="xMidYMid meet" focusable="false">
+    <g class="bonds">
+      {bonds.map((b) => (
+        <line
+          class:list={["bond", { "is-broken": seeded.has(b.a) || seeded.has(b.b) }]}
+          data-a={b.a}
+          data-b={b.b}
+          x1={b.x1} y1={b.y1} x2={b.x2} y2={b.y2}
+        />
+      ))}
+    </g>
+    <g class="atoms">
+      {atoms.map((a) => (
+        <g
+          class:list={["site", { "is-vacant": seeded.has(a.i) }]}
+          data-i={a.i}
+          transform={`translate(${a.x} ${a.y})`}
+          style={`--i:${order.get(a.i)}`}
+        >
+          <circle class="hit" r={R_HIT} />
+          <circle class="ring" r={R_RING} />
+          <circle
+            class:list={["dot", a.kind === "m" ? "is-metal" : "is-chalc"]}
+            r={a.kind === "m" ? R_M : R_X}
+          />
+        </g>
+      ))}
+    </g>
+  </svg>
+  <figcaption class="hero-lattice__hint ui">Hover an atom — engineer a vacancy</figcaption>
+</figure>
+
+<style>
+  .hero-lattice {
+    --ease: cubic-bezier(0.22, 0.7, 0.25, 1);
+    --stagger: 14ms;
+
+    position: relative;
+    margin: var(--space-l) 0 0;
+    aspect-ratio: 16 / 7;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .hero-lattice svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ── Lattice framework ── */
+  .bond {
+    stroke: var(--ink);
+    stroke-width: 2;
+    stroke-linecap: round;
+    opacity: 0.16;
+    transition: opacity 420ms var(--ease);
+  }
+  .bond.is-broken { opacity: 0.04; }
+
+  /* ── Atoms ── */
+  .hit { fill: transparent; }
+  .dot,
+  .ring {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .dot.is-metal { fill: var(--accent); }
+  .dot.is-chalc { fill: var(--ink-soft); }
+  .ring {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-dasharray: 3 4;
+    opacity: 0;
+  }
+
+  .site .dot {
+    transition: transform 420ms var(--ease), opacity 420ms var(--ease);
+  }
+  .site .ring { transition: opacity 420ms var(--ease); }
+
+  /* Vacancy: atom gone, dashed empty-site ring revealed. */
+  .site.is-vacant .dot { opacity: 0; transform: scale(0); }
+  .site.is-vacant .ring { opacity: 0.9; }
+
+  /* Affordance only when the interaction is actually live. */
+  .hero-lattice[data-interactive="true"] .site .hit { cursor: pointer; }
+
+  /* ── Hover hint (pointer-only enhancement) ── */
+  .hero-lattice__hint {
+    position: absolute;
+    right: var(--space-s);
+    bottom: var(--space-xs);
+    margin: 0;
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+  }
+  .hero-lattice[data-interactive="true"] .hero-lattice__hint { opacity: 0.75; }
+
+  /* ── Growth entrance — motion only, gated behind reduced-motion ── */
+  @media (prefers-reduced-motion: no-preference) {
+    .site:not(.is-vacant) .dot {
+      animation: dot-grow 560ms var(--ease) backwards;
+      animation-delay: calc(var(--i, 0) * var(--stagger));
+    }
+    .site.is-vacant .ring {
+      animation: ring-grow 560ms var(--ease) backwards;
+      animation-delay: calc(var(--i, 0) * var(--stagger));
+    }
+    .bonds { animation: fade-in 700ms var(--ease) 220ms backwards; }
+
+    @keyframes dot-grow {
+      from { opacity: 0; transform: scale(0); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    @keyframes ring-grow {
+      from { opacity: 0; }
+      to   { opacity: 0.9; }
+    }
+    @keyframes fade-in {
+      from { opacity: 0; }
+    }
+  }
+</style>
+
+<script>
+  // Progressive enhancement: interactive vacancy creation for fine pointers only,
+  // and never under reduced-motion. Otherwise the build-time SVG stands alone.
+  const root = document.querySelector<HTMLElement>(".hero-lattice");
+  const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (root && fine && !reduced) {
+    root.dataset.interactive = "true";
+
+    const sites = Array.from(root.querySelectorAll<SVGGElement>(".site"));
+    const bonds = Array.from(root.querySelectorAll<SVGLineElement>(".bond"));
+    const REGROW_MS = 2600;
+
+    const siteByIndex = new Map<string, SVGGElement>();
+    sites.forEach((s) => siteByIndex.set(s.dataset.i ?? "", s));
+
+    const bondsBySite = new Map<string, SVGLineElement[]>();
+    bonds.forEach((b) => {
+      for (const k of [b.dataset.a ?? "", b.dataset.b ?? ""]) {
+        const list = bondsBySite.get(k) ?? [];
+        list.push(b);
+        bondsBySite.set(k, list);
+      }
+    });
+
+    const refreshBond = (b: SVGLineElement) => {
+      const av = siteByIndex.get(b.dataset.a ?? "")?.classList.contains("is-vacant");
+      const bv = siteByIndex.get(b.dataset.b ?? "")?.classList.contains("is-vacant");
+      b.classList.toggle("is-broken", Boolean(av || bv));
+    };
+
+    const setVacant = (site: SVGGElement, vacant: boolean) => {
+      site.classList.toggle("is-vacant", vacant);
+      (bondsBySite.get(site.dataset.i ?? "") ?? []).forEach(refreshBond);
+    };
+
+    sites.forEach((site) => {
+      site.addEventListener("pointerenter", () => {
+        // Intrinsic (seeded) and already-empty sites stay put.
+        if (site.classList.contains("is-vacant")) return;
+        setVacant(site, true);
+        window.setTimeout(() => setVacant(site, false), REGROW_MS);
+      });
+    });
+  }
+</script>
