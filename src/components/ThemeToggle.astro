@@ -1,26 +1,55 @@
 ---
-// Light/dark toggle. Persists choice; respects system default on first visit.
+// Light/dark toggle. Persists choice via localStorage; respects system preference on first visit.
+// aria-label is updated by the script to reflect what the NEXT click will do.
 ---
-<button class="theme-toggle ui" type="button" aria-label="Toggle colour theme" title="Toggle theme">
+<button
+  class="theme-toggle ui"
+  type="button"
+  aria-label="Switch to dark theme"
+  title="Toggle colour theme"
+>
   <span aria-hidden="true" class="theme-toggle__icon">◑</span>
 </button>
 
 <style>
   .theme-toggle {
-    background: none; border: 1px solid var(--rule); border-radius: var(--radius);
-    color: var(--ink); width: 2rem; height: 2rem; cursor: pointer;
-    display: inline-grid; place-items: center; font-size: 1rem;
+    background: none;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    color: var(--ink);
+    min-width: 44px;
+    min-height: 44px;
+    cursor: pointer;
+    display: inline-grid;
+    place-items: center;
+    font-size: var(--step-0);
+    transition: border-color var(--transition-base);
+    flex-shrink: 0;
   }
   .theme-toggle:hover { border-color: var(--ink-soft); }
 </style>
 
 <script>
-  const btn = document.querySelector(".theme-toggle");
+  function updateToggle(isDark: boolean) {
+    const btn = document.querySelector<HTMLButtonElement>(".theme-toggle");
+    if (!btn) return;
+    btn.setAttribute(
+      "aria-label",
+      isDark ? "Switch to light theme" : "Switch to dark theme"
+    );
+  }
+
+  const btn = document.querySelector<HTMLButtonElement>(".theme-toggle");
+
   btn?.addEventListener("click", () => {
     const root = document.documentElement;
     const next = root.dataset.theme === "dark" ? "light" : "dark";
     if (next === "dark") root.dataset.theme = "dark";
     else delete root.dataset.theme;
     localStorage.setItem("theme", next);
+    updateToggle(next === "dark");
   });
+
+  // Sync aria-label to the theme that was set by the no-flash inline script in BaseLayout.
+  updateToggle(document.documentElement.dataset.theme === "dark");
 </script>
