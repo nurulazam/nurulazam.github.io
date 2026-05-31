@@ -8,12 +8,15 @@ import { SITE } from "../config/site";
 interface Props {
   title?: string;
   description?: string;
+  /** Optional social-share image (absolute path under public/, e.g. "/og.png"). */
+  image?: string;
   /** Set false on text-heavy pages that don't want the lattice texture. */
   lattice?: boolean;
 }
-const { title, description = SITE.description, lattice = false } = Astro.props;
+const { title, description = SITE.description, image, lattice = false } = Astro.props;
 const pageTitle = title ? `${title} — ${SITE.title}` : `${SITE.title} · ${SITE.tagline}`;
 const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const ogImage = image ? new URL(image, SITE.url).href : undefined;
 ---
 <!doctype html>
 <html lang={SITE.lang}>
@@ -23,12 +26,30 @@ const canonical = new URL(Astro.url.pathname, SITE.url).href;
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Feeds & discovery -->
+    <link rel="alternate" type="application/rss+xml" title={`Writing — ${SITE.title}`} href="/rss.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap-index.xml" />
+
+    <!-- theme-color mirrors --bg in tokens.css (a literal is required here; keep in sync) -->
+    <meta name="theme-color" content="#FBF9F4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#15140F" media="(prefers-color-scheme: dark)" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content={ogImage ? "summary_large_image" : "summary"} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
 
     <!-- No-flash theme: set before paint -->
     <script is:inline>
@@ -60,7 +81,7 @@ const canonical = new URL(Astro.url.pathname, SITE.url).href;
   <body class={lattice ? "lattice-bg" : undefined}>
     <a class="skip-link" href="#main">Skip to content</a>
     <Header />
-    <main id="main">
+    <main id="main" data-pagefind-body>
       <slot />
     </main>
     <Footer />

@@ -2,6 +2,8 @@
    Components must use these variables, never raw hex values or magic numbers. */
 
 :root {
+  color-scheme: light; /* native form controls, scrollbars, etc. */
+
   /* Type families */
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
   --font-body: "Newsreader", Georgia, "Times New Roman", serif;
@@ -50,6 +52,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg:          #15140F;
   --surface:     #1D1B16;
   --ink:         #F1EDE4;

@@ -1,0 +1,52 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Breadcrumbs from "../components/Breadcrumbs.astro";
+
+// Pagefind builds its index + UI assets into /pagefind/ during `npm run build`
+// (the `pagefind --site dist` step). Search therefore works in the production
+// build / `astro preview`, not in `astro dev`.
+---
+<BaseLayout title="Search" description="Search across research, writing, software, and publications.">
+  <div class="container search-page" data-pagefind-ignore>
+    <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: "Search" }]} />
+
+    <header class="search-page__head">
+      <h1>Search</h1>
+      <p class="lede">Find anything across research, writing, software, and publications.</p>
+    </header>
+
+    <div id="search"></div>
+    <noscript><p class="ui">Search requires JavaScript. You can browse from the navigation instead.</p></noscript>
+  </div>
+</BaseLayout>
+
+<link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+<script is:inline src="/pagefind/pagefind-ui.js"></script>
+<script is:inline>
+  window.addEventListener("DOMContentLoaded", () => {
+    // Guard so `astro dev` (no built index) doesn't throw.
+    if (typeof window.PagefindUI === "function") {
+      new window.PagefindUI({ element: "#search", showSubResults: true, showImages: false });
+    }
+  });
+</script>
+
+<style>
+  .search-page { padding-block: var(--space-xl); }
+  .search-page__head { max-width: var(--measure); margin-block: var(--space-m) var(--space-l); }
+  .search-page__head h1 { margin-top: var(--space-2xs); }
+  .lede { font-size: var(--step-1); color: var(--ink-soft); margin: 0; }
+
+  /* Theme the Pagefind UI through its CSS custom properties → site tokens.
+     Set on #search so the runtime-injected widget inherits them. */
+  #search {
+    --pagefind-ui-primary: var(--accent-ink);
+    --pagefind-ui-text: var(--ink);
+    --pagefind-ui-background: var(--surface);
+    --pagefind-ui-border: var(--rule);
+    --pagefind-ui-tag: var(--accent-wash);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: var(--radius);
+    --pagefind-ui-font: var(--font-ui);
+  }
+</style>

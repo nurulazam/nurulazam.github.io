@@ -144,3 +144,15 @@ pre {
   background-size: 26px 45px;
   background-position: 0 0, 13px 22.5px;
 }
+
+/* Smooth the light/dark switch — only on toggle, never on first paint
+   (the no-flash script sets the theme before paint, so nothing animates on load). */
+@media (prefers-reduced-motion: no-preference) {
+  body { transition: background-color 200ms ease, color 200ms ease; }
+}
+
+/* Shiki dual-theme code blocks: the container keeps token styling (set on
+   .prose pre), while syntax colours follow the active theme. */
+.astro-code { background: transparent !important; }
+[data-theme="dark"] .astro-code,
+[data-theme="dark"] .astro-code span { color: var(--shiki-dark) !important; }
