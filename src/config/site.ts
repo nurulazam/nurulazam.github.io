@@ -12,9 +12,7 @@ export const SITE = {
   author: 'Nurul Azam',
   lang: 'en',
   // Hero identity line — keep it concrete and specific.
-  identity:
-    'I synthesise and study quantum materials using MBE, laser-assisted growth, momentum ' +
-    'microscopy, Raman spectroscopy, and AI-guided analysis.',
+   identity: 'Booting a recursive machine: synthesise, probe, and infer!',
   analytics: {
     // GoatCounter endpoint. Register at https://www.goatcounter.com/ and paste your URL here.
     // Leave empty ('') to disable. Stats live in your private dashboard — no on-page counter.
