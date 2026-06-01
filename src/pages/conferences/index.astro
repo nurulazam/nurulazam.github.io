@@ -1,0 +1,41 @@
+---
+// ===========================================================================
+//  src/pages/conferences/index.astro
+//  Placeholder. The route + nav link work now; the presentations list and
+//  conference journal get built once the talk/poster data lands.
+// ===========================================================================
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Conferences" description="Invited talks, conference presentations, posters, and field notes from meetings.">
+  <section class="conf-page">
+    <p class="conf-crumb"><a href="/">Home</a> / Conferences</p>
+    <h1 class="conf-h1">Conferences</h1>
+    <p class="conf-intro">
+      Invited talks, contributed talks, and posters — plus field notes from the
+      meetings themselves. This page is being built.
+    </p>
+
+    <div class="conf-stub">
+      <h2 class="conf-h2">Presentations</h2>
+      <p class="conf-note">A filterable list of invited talks, contributed talks, and posters is on the way.</p>
+    </div>
+
+    <div class="conf-stub">
+      <h2 class="conf-h2">Conference journal</h2>
+      <p class="conf-note">Short, photo-led notes from conferences and meetings — coming soon.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .conf-page { max-width: 56rem; margin-inline: auto; }
+  .conf-crumb { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 var(--space-2xs); }
+  .conf-crumb a { color: inherit; text-decoration: none; }
+  .conf-crumb a:hover { color: var(--accent-ink); }
+  .conf-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-4); line-height: 1; margin: 0 0 var(--space-2xs); color: var(--ink); }
+  .conf-intro { font-family: var(--font-body); font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: var(--measure); margin: 0 0 var(--space-l); }
+  .conf-stub { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-s); }
+  .conf-h2 { font-family: var(--font-display); font-weight: 500; font-size: var(--step-1); margin: 0 0 var(--space-3xs); color: var(--ink); }
+  .conf-note { font-family: var(--font-body); font-size: var(--step-0); line-height: 1.55; color: var(--ink-soft); margin: 0; }
+</style>

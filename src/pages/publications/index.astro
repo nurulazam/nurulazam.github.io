@@ -1,151 +1,344 @@
 ---
-import BaseLayout from "../../layouts/BaseLayout.astro";
-import Breadcrumbs from "../../components/Breadcrumbs.astro";
-import { SOCIALS } from "../../config/site";
-import pubsData from "../../data/publications.json";
+// ===========================================================================
+//  src/pages/publications/index.astro
+//  Publications + Theses. Static; filtering/sorting/expand are client-side.
+//  Styled entirely with your real design tokens from tokens.css.
+// ===========================================================================
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { SOCIALS } from '../../config/site';
 
-type Pub = {
-  year: number;
-  authors: string;
-  title: string;
-  venue: string;
-  doi: string;
-};
-const data = pubsData as { note?: string; selected: Pub[] };
+// --- Headline citation count (manual; update by hand over time) -------------
+const CITATIONS = 662; // Google Scholar, updated manually
 
-// Group strictly by what's in the data file — newest year first. No invented
-// entries, DOIs, or citation counts (see CLAUDE.md rule 8).
-const byYear = new Map<number, Pub[]>();
-for (const p of [...data.selected].sort((a, b) => b.year - a.year)) {
-  const arr = byYear.get(p.year) ?? [];
-  arr.push(p);
-  byYear.set(p.year, arr);
+// --- Data -------------------------------------------------------------------
+const pubsRaw = await getCollection('publications');
+const thesesRaw = await getCollection('theses');
+
+const pubs = pubsRaw.sort((a, b) => b.data.year - a.data.year); // newest first
+const theses = thesesRaw.sort((a, b) => b.data.year - a.data.year);
+
+const items = await Promise.all(
+  pubs.map(async (p) => {
+    const hasAbstract = Boolean(p.body && p.body.trim().length > 0);
+    const { Content } = await render(p);
+    return { entry: p, hasAbstract, Content };
+  })
+);
+
+const scholarHref = SOCIALS.find((s) => /scholar/i.test(s.label))?.href ?? '#';
+
+const TOPIC_ORDER = [
+  'Synthesis', 'Optics & Excitons', 'Devices & Sensing',
+  'Thermal Transport', 'Magnetism', 'Topology', 'Radiation / Space',
+];
+const topicSet = new Set<string>();
+const materialSet = new Set<string>();
+const techSet = new Set<string>();
+for (const p of pubs) {
+  p.data.topics.forEach((t) => topicSet.add(t));
+  p.data.materials.forEach((t) => materialSet.add(t));
+  p.data.techniques.forEach((t) => techSet.add(t));
 }
-const years = [...byYear.keys()].sort((a, b) => b - a);
+const topics = [
+  ...TOPIC_ORDER.filter((t) => topicSet.has(t)),
+  ...[...topicSet].filter((t) => !TOPIC_ORDER.includes(t)),
+];
+const materials = [...materialSet];
+const techniques = [...techSet];
 
-// Full record lives on Scholar / ORCID — URLs come from site.ts (single source).
-const scholar = SOCIALS.find((s) => s.label === "Google Scholar");
-const orcid = SOCIALS.find((s) => s.label === "ORCID");
+const STATUS_LABEL: Record<string, string> = {
+  'under-review': 'Under review',
+  'in-preparation': 'In preparation',
+};
 
-// Emphasise the author's own name in each author list (display only).
-const OWNER = "Azam";
-const authorParts = (authors: string) => authors.split(new RegExp(`(${OWNER})`));
+const tagKey = (p: typeof pubs[number]) =>
+  '|' + [...p.data.topics, ...p.data.materials, ...p.data.techniques]
+    .map((t) => t.toLowerCase()).join('|') + '|';
+
+const boldAzam = (authors: string) =>
+  authors.replace(/Nurul Azam/g, '<strong>Nurul Azam</strong>');
+
+const linkFor = (p: typeof pubs[number]) =>
+  p.data.url || (p.data.doi ? `https://doi.org/${p.data.doi}` : null);
 ---
-<BaseLayout title="Publications" description="Selected peer-reviewed publications by Dr. Nurul Azam.">
-  <div class="container publications">
-    <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: "Publications" }]} />
 
-    <header class="publications__head">
-      <h1>Publications</h1>
-      <p class="lede">
-        Selected peer-reviewed work on the synthesis and characterisation of
-        quantum materials.
-      </p>
-      {(scholar || orcid) && (
-        <p class="pub-links ui">
-          Full record:{" "}
-          {scholar && (
-            <a href={scholar.href} target="_blank" rel="noopener noreferrer">Google Scholar ↗</a>
-          )}
-          {scholar && orcid && <span aria-hidden="true"> · </span>}
-          {orcid && (
-            <a href={orcid.href} target="_blank" rel="noopener noreferrer">ORCID ↗</a>
-          )}
-        </p>
+<BaseLayout title="Publications" description="Peer-reviewed publications in quantum-materials synthesis, optics, devices, and thermal transport.">
+  <section class="pub-page">
+    <p class="pub-crumb"><a href="/">Home</a> / Publications</p>
+    <h1 class="pub-h1">Publications</h1>
+    <p class="pub-intro">
+      Peer-reviewed work in quantum-materials synthesis, optics, devices, and thermal
+      transport. Filter by topic, material, or technique.
+    </p>
+
+    <div class="pub-tools">
+      <span class="pub-stat">
+        {pubs.length} publications ·
+        <a href={scholarHref} target="_blank" rel="noopener">{CITATIONS} citations on Google Scholar</a>
+      </span>
+      <label class="pub-sortwrap">
+        <span>Sort</span>
+        <select id="pub-sort">
+          <option value="new">Newest first</option>
+          <option value="old">Oldest first</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="pub-filters" id="pub-filters">
+      <div class="pub-frow">
+        <span class="pub-flabel">Topic</span>
+        <button class="pub-chip is-active" data-filter="all">All</button>
+        {topics.map((t) => (
+          <button class="pub-chip" data-filter={t.toLowerCase()}>{t}</button>
+        ))}
+      </div>
+
+      {(materials.length > 0 || techniques.length > 0) && (
+        <>
+          <button class="pub-more" id="pub-more" aria-expanded="false">+ More filters</button>
+          <div class="pub-extra" id="pub-extra" hidden>
+            {materials.length > 0 && (
+              <div class="pub-frow">
+                <span class="pub-flabel">Material</span>
+                {materials.map((m) => (
+                  <button class="pub-chip" data-filter={m.toLowerCase()}>{m}</button>
+                ))}
+              </div>
+            )}
+            {techniques.length > 0 && (
+              <div class="pub-frow">
+                <span class="pub-flabel">Technique</span>
+                {techniques.map((t) => (
+                  <button class="pub-chip" data-filter={t.toLowerCase()}>{t}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
       )}
-    </header>
+    </div>
 
-    {years.length > 0 ? (
-      years.map((year) => (
-        <section class="year-group">
-          <h2 class="year-group__year">{year}</h2>
-          <ol class="pub-list">
-            {byYear.get(year)!.map((p) => (
-              <li class="pub">
-                <h3 class="pub__title">{p.title}</h3>
-                <p class="pub__authors">
-                  {authorParts(p.authors).map((part, i) =>
-                    i % 2 === 1 ? <strong>{part}</strong> : part
-                  )}
-                </p>
-                <p class="pub__venue ui"><em>{p.venue}</em></p>
-                {p.doi && (
-                  <a
-                    class="pub__doi ui"
-                    href={`https://doi.org/${p.doi}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    doi.org/{p.doi} ↗
-                  </a>
-                )}
-              </li>
-            ))}
-          </ol>
-        </section>
-      ))
-    ) : (
-      <p class="empty ui">Publication list coming soon.</p>
+    <ol class="pub-list" id="pub-list">
+      {items.map(({ entry: p, hasAbstract, Content }) => {
+        const link = linkFor(p);
+        const statusLabel = STATUS_LABEL[p.data.status];
+        return (
+          <li class="pub-card" data-tags={tagKey(p)} data-year={p.data.year}>
+            <div class="pub-thumb">
+              {p.data.image ? (
+                <img src={p.data.image} alt={p.data.imageAlt ?? p.data.title} loading="lazy" />
+              ) : (
+                <div class="pub-thumb-fb">
+                  <span>{statusLabel ?? p.data.venue ?? 'Paper'}</span>
+                </div>
+              )}
+            </div>
+
+            <div class="pub-body">
+              {link ? (
+                <a class="pub-title" href={link} target="_blank" rel="noopener">{p.data.title}</a>
+              ) : (
+                <span class="pub-title pub-title--plain">{p.data.title}</span>
+              )}
+
+              <p class="pub-authors" set:html={boldAzam(p.data.authors)} />
+
+              <p class="pub-meta">
+                {p.data.venue && <em>{p.data.venue}</em>}
+                {p.data.venue && <span class="pub-dot">·</span>}
+                <span>{p.data.year}</span>
+                {statusLabel && <span class="pub-badge">{statusLabel}</span>}
+              </p>
+
+              {hasAbstract ? (
+                <>
+                  <div class="pub-abstract is-clamped"><Content /></div>
+                  <button class="pub-toggle" aria-expanded="false">Show abstract</button>
+                </>
+              ) : (
+                <p class="pub-abstract pub-abstract--pending">Abstract available on publication.</p>
+              )}
+
+              {(p.data.topics.length + p.data.materials.length + p.data.techniques.length) > 0 && (
+                <div class="pub-tags">
+                  {[...p.data.topics, ...p.data.materials, ...p.data.techniques].map((t) => (
+                    <span class="pub-tag">{t}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+
+    <p class="pub-empty" id="pub-empty" hidden>No publications match that filter.</p>
+
+    {theses.length > 0 && (
+      <section class="thesis-block">
+        <h2 class="thesis-h2">Theses &amp; Dissertations</h2>
+        <p class="thesis-sub">Academic / institutional work, kept separate from the peer-reviewed list above.</p>
+        {theses.map((t) => (
+          <article class="thesis-card">
+            <p class="thesis-title">{t.data.title}</p>
+            <p class="thesis-meta">
+              {t.data.degree} · {t.data.institution} · {t.data.year}
+              {t.data.advisor && <> · Advisor: {t.data.advisor}</>}
+            </p>
+            {t.data.url && (
+              <a class="thesis-link" href={t.data.url} target="_blank" rel="noopener">
+                View on ProQuest →
+              </a>
+            )}
+          </article>
+        ))}
+      </section>
     )}
-
-    {data.note && <p class="pub-note ui">{data.note}</p>}
-  </div>
+  </section>
 </BaseLayout>
 
 <style>
-  .publications { padding-block: var(--space-xl); }
-  .publications__head { max-width: var(--measure); margin-block: var(--space-m) var(--space-xl); }
-  .publications__head h1 { margin-top: var(--space-2xs); }
-  .lede { font-size: var(--step-1); color: var(--ink-soft); margin: 0 0 var(--space-s); }
-  .pub-links { font-size: var(--step--1); color: var(--ink-soft); margin: 0; }
-  .pub-links a { color: var(--accent-ink); text-decoration: none; }
-  .pub-links a:hover { text-decoration: underline; }
+  .pub-page { max-width: 56rem; margin-inline: auto; }
 
-  /* ── Year groups ── */
-  .year-group { margin-bottom: var(--space-2xl); }
-  .year-group:last-of-type { margin-bottom: var(--space-l); }
-  .year-group__year {
-    font-size: var(--step-2);
-    color: var(--accent-ink);
-    padding-bottom: var(--space-2xs);
-    margin-bottom: var(--space-m);
-    border-bottom: 1px solid var(--rule);
-  }
+  .pub-crumb { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 var(--space-2xs); }
+  .pub-crumb a { color: inherit; text-decoration: none; }
+  .pub-crumb a:hover { color: var(--accent-ink); }
 
-  /* ── Publication entries ── */
-  .pub-list { list-style: none; margin: 0; padding: 0; }
-  .pub {
-    max-width: var(--measure);
-    padding-block: var(--space-m);
-    border-top: 1px solid var(--rule);
-  }
-  .pub:first-child { border-top: none; padding-top: 0; }
-  .pub__title {
-    font-family: var(--font-body);
-    font-size: var(--step-1);
-    font-weight: 600;
-    line-height: 1.3;
-    margin: 0 0 var(--space-3xs);
-  }
-  .pub__authors { margin: 0 0 var(--space-3xs); color: var(--ink); font-size: var(--step-0); }
-  .pub__authors strong { font-weight: 700; color: var(--accent-ink); }
-  .pub__venue { margin: 0; font-size: var(--step--1); color: var(--ink-soft); }
-  .pub__doi {
-    display: inline-block;
-    margin-top: var(--space-2xs);
-    font-size: var(--step--1);
-    color: var(--accent-ink);
-    text-decoration: none;
-  }
-  .pub__doi:hover { text-decoration: underline; }
+  .pub-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-4); line-height: 1; margin: 0 0 var(--space-2xs); color: var(--ink); }
+  .pub-intro { font-family: var(--font-body); font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: var(--measure); margin: 0 0 var(--space-m); }
 
-  .pub-note {
-    max-width: var(--measure);
-    font-size: var(--step--1);
-    color: var(--ink-soft);
-    font-style: italic;
-    padding-top: var(--space-m);
-    border-top: 1px solid var(--rule);
+  .pub-tools { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-s); flex-wrap: wrap; margin-bottom: var(--space-s); }
+  .pub-stat { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); }
+  .pub-stat a { color: var(--accent-ink); text-decoration: none; }
+  .pub-stat a:hover { text-decoration: underline; }
+  .pub-sortwrap { display: inline-flex; align-items: center; gap: var(--space-2xs); font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); }
+  .pub-sortwrap select { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-3xs) var(--space-2xs); }
+
+  /* Filters */
+  .pub-filters { margin-bottom: var(--space-m); }
+  .pub-frow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2xs); margin-bottom: var(--space-2xs); }
+  .pub-flabel { font-family: var(--font-ui); font-size: var(--step--1); letter-spacing: 0.05em; text-transform: uppercase; color: color-mix(in srgb, var(--ink-soft) 75%, transparent); flex: 0 0 4.5rem; }
+  .pub-chip { font-family: var(--font-ui); font-size: var(--step--1); padding: var(--space-3xs) var(--space-xs); border-radius: var(--radius); border: 1px solid var(--rule); background: transparent; color: var(--ink-soft); cursor: pointer; transition: color var(--transition-base), border-color var(--transition-base), background var(--transition-base); }
+  .pub-chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .pub-chip.is-active { background: var(--accent-wash); color: var(--accent-ink); border-color: var(--accent); }
+  .pub-chip:focus-visible { outline: var(--focus); outline-offset: 2px; }
+  .pub-more { font-family: var(--font-ui); font-size: var(--step--1); color: var(--accent-ink); background: none; border: none; padding: 0; cursor: pointer; }
+  .pub-more:focus-visible { outline: var(--focus); outline-offset: 2px; }
+
+  /* List + cards */
+  .pub-list { list-style: none; padding: 0; margin: 0; }
+  .pub-card { display: flex; gap: var(--space-s); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-s); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); }
+  .pub-card[hidden] { display: none; }
+
+  .pub-thumb { flex: 0 0 140px; }
+  .pub-thumb img { width: 140px; height: 105px; object-fit: cover; border-radius: var(--radius); display: block; background: var(--accent-wash); }
+  .pub-thumb-fb { width: 140px; height: 105px; border-radius: var(--radius); background: var(--accent-wash); display: flex; align-items: center; justify-content: center; padding: 0 var(--space-2xs); text-align: center; }
+  .pub-thumb-fb span { font-family: var(--font-ui); font-size: var(--step--1); font-weight: 500; color: var(--accent-ink); }
+
+  .pub-body { flex: 1; min-width: 0; }
+  .pub-title { font-family: var(--font-display); font-weight: 500; font-size: var(--step-1); line-height: 1.28; color: var(--accent-ink); text-decoration: none; display: inline-block; }
+  .pub-title:hover { text-decoration: underline; }
+  .pub-title--plain { color: var(--ink); }
+  .pub-authors { font-family: var(--font-body); font-size: var(--step--1); line-height: 1.45; color: var(--ink-soft); margin: var(--space-2xs) 0 0.15rem; }
+  .pub-authors :global(strong) { color: var(--ink); font-weight: 600; }
+  .pub-meta { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 var(--space-2xs); display: flex; align-items: center; gap: var(--space-2xs); flex-wrap: wrap; }
+  .pub-meta em { font-style: italic; }
+  .pub-dot { opacity: 0.5; }
+  .pub-badge { font-family: var(--font-ui); font-size: var(--step--1); padding: 0.05rem var(--space-2xs); border-radius: var(--radius); background: var(--accent-wash); color: var(--accent-ink); border: 1px solid var(--accent); }
+
+  .pub-abstract { font-family: var(--font-body); font-size: var(--step-0); line-height: 1.6; color: var(--ink-soft); margin: 0; }
+  .pub-abstract :global(p) { margin: 0; }
+  .pub-abstract.is-clamped :global(p) { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .pub-abstract--pending { font-style: italic; color: color-mix(in srgb, var(--ink-soft) 70%, transparent); }
+  .pub-toggle { font-family: var(--font-ui); font-size: var(--step--1); color: var(--accent-ink); background: none; border: none; padding: var(--space-3xs) 0 0; cursor: pointer; }
+  .pub-toggle:focus-visible { outline: var(--focus); outline-offset: 2px; }
+
+  .pub-tags { display: flex; flex-wrap: wrap; gap: var(--space-3xs); margin-top: var(--space-2xs); }
+  .pub-tag { font-family: var(--font-ui); font-size: var(--step--1); padding: 0.1rem var(--space-2xs); border-radius: var(--radius); background: var(--accent-wash); color: var(--accent-ink); }
+
+  .pub-empty { font-family: var(--font-ui); font-size: var(--step-0); color: var(--ink-soft); text-align: center; padding: var(--space-l) 0; }
+
+  /* Theses */
+  .thesis-block { margin-top: var(--space-l); padding-top: var(--space-m); border-top: 1px solid var(--rule); }
+  .thesis-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); margin: 0 0 var(--space-3xs); color: var(--ink); }
+  .thesis-sub { font-family: var(--font-ui); font-size: var(--step--1); color: color-mix(in srgb, var(--ink-soft) 75%, transparent); margin: 0 0 var(--space-s); }
+  .thesis-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-2xs); }
+  .thesis-title { font-family: var(--font-display); font-weight: 500; font-size: var(--step-0); line-height: 1.3; margin: 0; color: var(--ink); }
+  .thesis-meta { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: var(--space-3xs) 0 0; }
+  .thesis-link { font-family: var(--font-ui); font-size: var(--step--1); color: var(--accent-ink); text-decoration: none; display: inline-block; margin-top: var(--space-2xs); }
+  .thesis-link:hover { text-decoration: underline; }
+
+  /* Mobile: stack image above text */
+  @media (max-width: 560px) {
+    .pub-card { flex-direction: column; gap: var(--space-xs); }
+    .pub-thumb, .pub-thumb img, .pub-thumb-fb { width: 100%; }
+    .pub-thumb img, .pub-thumb-fb { height: 150px; }
+    .pub-flabel { flex-basis: 100%; }
   }
-  .empty { color: var(--ink-soft); font-style: italic; padding-block: var(--space-m); }
 </style>
+
+<script>
+  function initPublications() {
+    const page = document.querySelector('.pub-page');
+    if (!page) return;
+
+    const list = page.querySelector<HTMLOListElement>('#pub-list');
+    const cards = Array.from(page.querySelectorAll<HTMLLIElement>('.pub-card'));
+    const chips = Array.from(page.querySelectorAll<HTMLButtonElement>('.pub-chip'));
+    const empty = page.querySelector<HTMLParagraphElement>('#pub-empty');
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chips.forEach((c) => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        const f = chip.dataset.filter || 'all';
+        let visible = 0;
+        cards.forEach((card) => {
+          const tags = card.dataset.tags || '';
+          const show = f === 'all' || tags.includes('|' + f + '|');
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        if (empty) empty.hidden = visible !== 0;
+      });
+    });
+
+    const more = page.querySelector<HTMLButtonElement>('#pub-more');
+    const extra = page.querySelector<HTMLDivElement>('#pub-extra');
+    if (more && extra) {
+      more.addEventListener('click', () => {
+        const open = extra.hidden;
+        extra.hidden = !open;
+        more.setAttribute('aria-expanded', String(open));
+        more.textContent = open ? '– Fewer filters' : '+ More filters';
+      });
+    }
+
+    page.querySelectorAll<HTMLButtonElement>('.pub-toggle').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const abs = btn.previousElementSibling as HTMLElement | null;
+        if (!abs) return;
+        const open = abs.classList.toggle('is-clamped') === false;
+        btn.setAttribute('aria-expanded', String(open));
+        btn.textContent = open ? 'Hide abstract' : 'Show abstract';
+      });
+    });
+
+    const sort = page.querySelector<HTMLSelectElement>('#pub-sort');
+    if (sort && list) {
+      sort.addEventListener('change', () => {
+        const arr = Array.from(list.querySelectorAll<HTMLLIElement>('.pub-card'));
+        arr.sort((a, b) => {
+          const ya = Number(a.dataset.year), yb = Number(b.dataset.year);
+          return sort.value === 'new' ? yb - ya : ya - yb;
+        });
+        arr.forEach((c) => list.appendChild(c));
+      });
+    }
+  }
+
+  initPublications();
+  document.addEventListener('astro:page-load', initPublications); // View Transitions safe
+</script>

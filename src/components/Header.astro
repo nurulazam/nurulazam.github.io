@@ -1,5 +1,5 @@
 ---
-import { SITE, NAV, PRIMARY_CTA } from "../config/site";
+import { SITE, NAV } from "../config/site";
 import ThemeToggle from "./ThemeToggle.astro";
 const path = Astro.url.pathname;
 const isActive = (href: string) => path === href || (href !== "/" && path.startsWith(href));
@@ -29,7 +29,6 @@ const isActive = (href: string) => path === href || (href !== "/" && path.starts
           </li>
         ))}
       </ul>
-      <a class="cta" href={PRIMARY_CTA.href}>{PRIMARY_CTA.label}</a>
       <ThemeToggle />
     </nav>
   </div>
@@ -68,21 +67,6 @@ const isActive = (href: string) => path === href || (href !== "/" && path.starts
   .nav a[aria-current="page"] { color: var(--ink); }
   .nav a[aria-current="page"] { font-weight: 500; }
 
-  /* ── Primary CTA ── */
-  .cta {
-    font-family: var(--font-ui); font-size: var(--step--1); font-weight: 500;
-    color: var(--bg); background: var(--accent);
-    padding: var(--space-2xs) var(--space-s);
-    border-radius: var(--radius); text-decoration: none;
-    display: inline-flex; align-items: center; min-height: 44px;
-    transition: opacity var(--transition-base);
-  }
-  .cta:hover { opacity: 0.88; }
-  .cta:focus-visible {
-    outline: var(--focus); outline-offset: 3px;
-    border-radius: var(--radius);
-  }
-
   /* ── Mobile toggle ── */
   .menu-toggle {
     display: none; align-items: center; gap: var(--space-2xs);
@@ -117,7 +101,6 @@ const isActive = (href: string) => path === href || (href !== "/" && path.starts
     .nav[data-open="true"] { display: flex; }
     .nav ul { flex-direction: column; gap: var(--space-2xs); width: 100%; }
     .nav ul a { font-size: var(--step-0); width: 100%; }
-    .cta { width: 100%; justify-content: center; }
   }
 </style>
 
