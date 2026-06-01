@@ -86,4 +86,29 @@ const theses = defineCollection({
   }),
 });
 
-export const collections = { writing, research, software, publications, theses };
+// Conferences: talks and posters. Lighter than publications — no abstract, no TOC image.
+// `venue` is the filter group (SPIE, APS, MRS, ...); `presenter` drives the
+// Presented / Co-authored filter; `presenterName` is shown in brackets on the card.
+const conferences = defineCollection({
+  loader: glob({ pattern: '**/*.{md,mdx}', base: './src/content/conferences' }),
+  schema: z.object({
+    title: z.string(),
+    authors: z.string(),
+    year: z.number(),
+    venue: z.string(),                          // 'SPIE' | 'APS' | 'MRS' | 'NACMBE' | ...
+    event: z.string(),                          // full conference / proceedings name
+    location: z.string().optional(),
+    type: z.enum(['invited', 'talk', 'poster']),
+    presenter: z.boolean().default(true),       // did Azam present it?
+    presenterName: z.string().optional(),       // who presented (bracket text)
+    doi: z.string().optional(),                 // bare identifier, e.g. '10.1117/12.3078960'
+    url: z.string().url().optional(),           // abstract / event page (e.g. meetings.aps.org)
+    poster: z.string().optional(),              // /posters/<slug>.pdf|.jpg — scanned hard copy
+    topics: z.array(z.string()).default([]),
+    materials: z.array(z.string()).default([]),
+    techniques: z.array(z.string()).default([]),
+    featured: z.boolean().default(false),
+  }),
+});
+
+export const collections = { writing, research, software, publications, theses, conferences };

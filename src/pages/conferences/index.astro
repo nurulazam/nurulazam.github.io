@@ -1,41 +1,321 @@
 ---
 // ===========================================================================
 //  src/pages/conferences/index.astro
-//  Placeholder. The route + nav link work now; the presentations list and
-//  conference journal get built once the talk/poster data lands.
+//  Conference talks + posters. Static; filtering/sorting are client-side.
+//  Mirrors publications/index.astro: same tokens, same single-select filter JS.
+//  Lighter cards (no thumbnail, no abstract) + a Conference journal section
+//  that surfaces Writing entries tagged "Field Notes".
 // ===========================================================================
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+
+// --- Data -------------------------------------------------------------------
+const confsRaw = await getCollection('conferences');
+const confs = confsRaw.sort((a, b) => b.data.year - a.data.year); // newest first
+
+// Conference journal = Writing entries tagged "Field Notes" (no new engine).
+const fieldNotesRaw = await getCollection('writing', ({ data }) =>
+  data.category === 'Field Notes' && !data.draft
+);
+const fieldNotes = fieldNotesRaw.sort((a, b) => +b.data.date - +a.data.date);
+
+// --- Counts for the header --------------------------------------------------
+const invitedCount = confs.filter((c) => c.data.type === 'invited').length;
+const presentedCount = confs.filter((c) => c.data.presenter).length;
+
+// --- Filter facets ----------------------------------------------------------
+const VENUE_ORDER = ['SPIE', 'APS', 'MRS', 'NACMBE', 'ICALEO', 'ECS', 'Texas STEM', 'CNMS', 'Showcase'];
+const venueSet = new Set<string>();
+const materialSet = new Set<string>();
+const techSet = new Set<string>();
+for (const c of confs) {
+  venueSet.add(c.data.venue);
+  c.data.materials.forEach((t) => materialSet.add(t));
+  c.data.techniques.forEach((t) => techSet.add(t));
+}
+const venues = [
+  ...VENUE_ORDER.filter((v) => venueSet.has(v)),
+  ...[...venueSet].filter((v) => !VENUE_ORDER.includes(v)),
+];
+const materials = [...materialSet];
+const techniques = [...techSet];
+
+const TYPE_LABEL: Record<string, string> = { invited: 'Invited', talk: 'Talk', poster: 'Poster' };
+
+// Every facet that can be filtered becomes a token in the card's data-tags string,
+// so the existing single-select chip logic ("|token|") works unchanged.
+const tagKey = (c: typeof confs[number]) =>
+  '|' + [
+    c.data.presenter ? 'presented' : 'co-authored',
+    c.data.type,
+    c.data.venue,
+    ...c.data.topics, ...c.data.materials, ...c.data.techniques,
+  ].map((t) => t.toLowerCase()).join('|') + '|';
+
+const boldAzam = (authors: string) =>
+  authors.replace(/Nurul Azam/g, '<strong>Nurul Azam</strong>');
+
+const linkFor = (c: typeof confs[number]) =>
+  c.data.url || (c.data.doi ? `https://doi.org/${c.data.doi}` : null);
 ---
 
-<BaseLayout title="Conferences" description="Invited talks, conference presentations, posters, and field notes from meetings.">
+<BaseLayout title="Conferences" description="Conference talks and posters in quantum-materials synthesis, spectroscopy, and devices.">
   <section class="conf-page">
     <p class="conf-crumb"><a href="/">Home</a> / Conferences</p>
     <h1 class="conf-h1">Conferences</h1>
     <p class="conf-intro">
-      Invited talks, contributed talks, and posters — plus field notes from the
-      meetings themselves. This page is being built.
+      Talks, posters, and invited presentations in quantum-materials synthesis,
+      spectroscopy, and devices. Filter by venue, type, or role.
     </p>
 
-    <div class="conf-stub">
-      <h2 class="conf-h2">Presentations</h2>
-      <p class="conf-note">A filterable list of invited talks, contributed talks, and posters is on the way.</p>
+    <div class="conf-tools">
+      <span class="conf-stat">
+        {confs.length} presentations · {invitedCount} invited · {presentedCount} presented
+      </span>
+      <label class="conf-sortwrap">
+        <span>Sort</span>
+        <select id="conf-sort">
+          <option value="new">Newest first</option>
+          <option value="old">Oldest first</option>
+        </select>
+      </label>
     </div>
 
-    <div class="conf-stub">
-      <h2 class="conf-h2">Conference journal</h2>
-      <p class="conf-note">Short, photo-led notes from conferences and meetings — coming soon.</p>
+    <div class="conf-filters" id="conf-filters">
+      <div class="conf-frow">
+        <span class="conf-flabel">Show</span>
+        <button class="conf-chip is-active" data-filter="all">All</button>
+        <button class="conf-chip" data-filter="invited">Invited</button>
+        <button class="conf-chip" data-filter="presented">Presented</button>
+        <button class="conf-chip" data-filter="co-authored">Co-authored</button>
+      </div>
+
+      <div class="conf-frow">
+        <span class="conf-flabel">Venue</span>
+        {venues.map((v) => (
+          <button class="conf-chip" data-filter={v.toLowerCase()}>{v}</button>
+        ))}
+      </div>
+
+      {(materials.length > 0 || techniques.length > 0) && (
+        <>
+          <button class="conf-more" id="conf-more" aria-expanded="false">+ More filters</button>
+          <div class="conf-extra" id="conf-extra" hidden>
+            {materials.length > 0 && (
+              <div class="conf-frow">
+                <span class="conf-flabel">Material</span>
+                {materials.map((m) => (
+                  <button class="conf-chip" data-filter={m.toLowerCase()}>{m}</button>
+                ))}
+              </div>
+            )}
+            {techniques.length > 0 && (
+              <div class="conf-frow">
+                <span class="conf-flabel">Technique</span>
+                {techniques.map((t) => (
+                  <button class="conf-chip" data-filter={t.toLowerCase()}>{t}</button>
+                ))}
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
+
+    <ol class="conf-list" id="conf-list">
+      {confs.map((c) => {
+        const link = linkFor(c);
+        return (
+          <li class="conf-card" data-tags={tagKey(c)} data-year={c.data.year}>
+            <div class="conf-head">
+              <span class={`conf-badge conf-badge--${c.data.type}`}>{TYPE_LABEL[c.data.type]}</span>
+              {link ? (
+                <a class="conf-title" href={link} target="_blank" rel="noopener">{c.data.title}</a>
+              ) : (
+                <span class="conf-title conf-title--plain">{c.data.title}</span>
+              )}
+            </div>
+
+            <p class="conf-authors">
+              <span set:html={boldAzam(c.data.authors)} />
+              {c.data.presenterName && (
+                <span class={c.data.presenter ? 'conf-pres conf-pres--me' : 'conf-pres'}>
+                  {' · presented by '}{c.data.presenterName}
+                </span>
+              )}
+            </p>
+
+            <p class="conf-meta">
+              <em>{c.data.event}</em>
+              {c.data.location && <><span class="conf-dot">·</span><span>{c.data.location}</span></>}
+              <span class="conf-dot">·</span><span>{c.data.year}</span>
+            </p>
+
+            {c.data.poster && (
+              <a class="conf-poster" href={c.data.poster} target="_blank" rel="noopener">View poster →</a>
+            )}
+
+            {(c.data.topics.length + c.data.materials.length + c.data.techniques.length) > 0 && (
+              <div class="conf-tags">
+                {[...c.data.topics, ...c.data.materials, ...c.data.techniques].map((t) => (
+                  <span class="conf-tag">{t}</span>
+                ))}
+              </div>
+            )}
+          </li>
+        );
+      })}
+    </ol>
+
+    <p class="conf-empty" id="conf-empty" hidden>No presentations match that filter.</p>
+
+    <section class="journal-block">
+      <h2 class="journal-h2">Conference journal</h2>
+      <p class="journal-sub">Notes and reflections from the road — written as Writing entries tagged "Field Notes".</p>
+      {fieldNotes.length > 0 ? (
+        <ul class="journal-list">
+          {fieldNotes.map((n) => (
+            <li class="journal-card">
+              <a class="journal-title" href={`/writing/${n.id}/`}>{n.data.title}</a>
+              <p class="journal-meta">
+                {n.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+              </p>
+              {n.data.description && <p class="journal-excerpt">{n.data.description}</p>}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="journal-empty">No field notes yet.</p>
+      )}
+    </section>
   </section>
 </BaseLayout>
 
 <style>
   .conf-page { max-width: 56rem; margin-inline: auto; }
+
   .conf-crumb { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: 0 0 var(--space-2xs); }
   .conf-crumb a { color: inherit; text-decoration: none; }
   .conf-crumb a:hover { color: var(--accent-ink); }
+
   .conf-h1 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-4); line-height: 1; margin: 0 0 var(--space-2xs); color: var(--ink); }
-  .conf-intro { font-family: var(--font-body); font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: var(--measure); margin: 0 0 var(--space-l); }
-  .conf-stub { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-s); }
-  .conf-h2 { font-family: var(--font-display); font-weight: 500; font-size: var(--step-1); margin: 0 0 var(--space-3xs); color: var(--ink); }
-  .conf-note { font-family: var(--font-body); font-size: var(--step-0); line-height: 1.55; color: var(--ink-soft); margin: 0; }
+  .conf-intro { font-family: var(--font-body); font-size: var(--step-1); line-height: 1.5; color: var(--ink-soft); max-width: var(--measure); margin: 0 0 var(--space-m); }
+
+  .conf-tools { display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-s); flex-wrap: wrap; margin-bottom: var(--space-s); }
+  .conf-stat { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); }
+  .conf-sortwrap { display: inline-flex; align-items: center; gap: var(--space-2xs); font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); }
+  .conf-sortwrap select { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius); padding: var(--space-3xs) var(--space-2xs); }
+
+  /* Filters */
+  .conf-filters { margin-bottom: var(--space-m); }
+  .conf-frow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2xs); margin-bottom: var(--space-2xs); }
+  .conf-flabel { font-family: var(--font-ui); font-size: var(--step--1); letter-spacing: 0.05em; text-transform: uppercase; color: color-mix(in srgb, var(--ink-soft) 75%, transparent); flex: 0 0 4.5rem; }
+  .conf-chip { font-family: var(--font-ui); font-size: var(--step--1); padding: var(--space-3xs) var(--space-xs); border-radius: var(--radius); border: 1px solid var(--rule); background: transparent; color: var(--ink-soft); cursor: pointer; transition: color var(--transition-base), border-color var(--transition-base), background var(--transition-base); }
+  .conf-chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+  .conf-chip.is-active { background: var(--accent-wash); color: var(--accent-ink); border-color: var(--accent); }
+  .conf-chip:focus-visible { outline: var(--focus); outline-offset: 2px; }
+  .conf-more { font-family: var(--font-ui); font-size: var(--step--1); color: var(--accent-ink); background: none; border: none; padding: 0; cursor: pointer; }
+  .conf-more:focus-visible { outline: var(--focus); outline-offset: 2px; }
+
+  /* List + cards (lighter than publications: no thumbnail, no abstract) */
+  .conf-list { list-style: none; padding: 0; margin: 0; }
+  .conf-card { padding: var(--space-s) var(--space-m); margin-bottom: var(--space-2xs); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); }
+  .conf-card[hidden] { display: none; }
+
+  .conf-head { display: flex; align-items: baseline; gap: var(--space-2xs); flex-wrap: wrap; }
+  .conf-badge { font-family: var(--font-ui); font-size: var(--step--1); line-height: 1.2; padding: 0.1rem var(--space-2xs); border-radius: var(--radius); border: 1px solid var(--rule); color: var(--ink-soft); letter-spacing: 0.03em; flex: 0 0 auto; }
+  .conf-badge--invited { background: var(--accent-wash); color: var(--accent-ink); border-color: var(--accent); }
+  .conf-badge--poster { background: color-mix(in srgb, var(--ink-soft) 12%, transparent); color: var(--ink); }
+  /* talk = plain outline (default) */
+
+  .conf-title { font-family: var(--font-display); font-weight: 500; font-size: var(--step-1); line-height: 1.28; color: var(--accent-ink); text-decoration: none; }
+  .conf-title:hover { text-decoration: underline; }
+  .conf-title--plain { color: var(--ink); }
+
+  .conf-authors { font-family: var(--font-body); font-size: var(--step--1); line-height: 1.45; color: var(--ink-soft); margin: var(--space-2xs) 0 0.15rem; }
+  .conf-authors :global(strong) { color: var(--ink); font-weight: 600; }
+  .conf-pres { color: var(--ink-soft); }
+  .conf-pres--me { color: var(--accent-ink); }
+
+  .conf-meta { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: 0; display: flex; align-items: center; gap: var(--space-2xs); flex-wrap: wrap; }
+  .conf-meta em { font-style: italic; }
+  .conf-dot { opacity: 0.5; }
+
+  .conf-poster { font-family: var(--font-ui); font-size: var(--step--1); color: var(--accent-ink); text-decoration: none; display: inline-block; margin-top: var(--space-2xs); }
+  .conf-poster:hover { text-decoration: underline; }
+
+  .conf-tags { display: flex; flex-wrap: wrap; gap: var(--space-3xs); margin-top: var(--space-2xs); }
+  .conf-tag { font-family: var(--font-ui); font-size: var(--step--1); padding: 0.1rem var(--space-2xs); border-radius: var(--radius); background: var(--accent-wash); color: var(--accent-ink); }
+
+  .conf-empty { font-family: var(--font-ui); font-size: var(--step-0); color: var(--ink-soft); text-align: center; padding: var(--space-l) 0; }
+
+  /* Conference journal */
+  .journal-block { margin-top: var(--space-l); padding-top: var(--space-m); border-top: 1px solid var(--rule); }
+  .journal-h2 { font-family: var(--font-display); font-weight: 600; font-size: var(--step-2); margin: 0 0 var(--space-3xs); color: var(--ink); }
+  .journal-sub { font-family: var(--font-ui); font-size: var(--step--1); color: color-mix(in srgb, var(--ink-soft) 75%, transparent); margin: 0 0 var(--space-s); }
+  .journal-list { list-style: none; padding: 0; margin: 0; }
+  .journal-card { background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-2xs); }
+  .journal-title { font-family: var(--font-display); font-weight: 500; font-size: var(--step-0); line-height: 1.3; color: var(--accent-ink); text-decoration: none; display: inline-block; }
+  .journal-title:hover { text-decoration: underline; }
+  .journal-meta { font-family: var(--font-ui); font-size: var(--step--1); color: var(--ink-soft); margin: var(--space-3xs) 0 0; }
+  .journal-excerpt { font-family: var(--font-body); font-size: var(--step-0); line-height: 1.55; color: var(--ink-soft); margin: var(--space-3xs) 0 0; }
+  .journal-empty { font-family: var(--font-body); font-size: var(--step-0); font-style: italic; color: color-mix(in srgb, var(--ink-soft) 70%, transparent); margin: 0; }
+
+  @media (max-width: 560px) {
+    .conf-flabel { flex-basis: 100%; }
+  }
 </style>
+
+<script>
+  function initConferences() {
+    const page = document.querySelector('.conf-page');
+    if (!page) return;
+
+    const list = page.querySelector<HTMLOListElement>('#conf-list');
+    const cards = Array.from(page.querySelectorAll<HTMLLIElement>('.conf-card'));
+    const chips = Array.from(page.querySelectorAll<HTMLButtonElement>('.conf-chip'));
+    const empty = page.querySelector<HTMLParagraphElement>('#conf-empty');
+
+    chips.forEach((chip) => {
+      chip.addEventListener('click', () => {
+        chips.forEach((c) => c.classList.remove('is-active'));
+        chip.classList.add('is-active');
+        const f = chip.dataset.filter || 'all';
+        let visible = 0;
+        cards.forEach((card) => {
+          const tags = card.dataset.tags || '';
+          const show = f === 'all' || tags.includes('|' + f + '|');
+          card.hidden = !show;
+          if (show) visible++;
+        });
+        if (empty) empty.hidden = visible !== 0;
+      });
+    });
+
+    const more = page.querySelector<HTMLButtonElement>('#conf-more');
+    const extra = page.querySelector<HTMLDivElement>('#conf-extra');
+    if (more && extra) {
+      more.addEventListener('click', () => {
+        const open = extra.hidden;
+        extra.hidden = !open;
+        more.setAttribute('aria-expanded', String(open));
+        more.textContent = open ? '– Fewer filters' : '+ More filters';
+      });
+    }
+
+    const sort = page.querySelector<HTMLSelectElement>('#conf-sort');
+    if (sort && list) {
+      sort.addEventListener('change', () => {
+        const arr = Array.from(list.querySelectorAll<HTMLLIElement>('.conf-card'));
+        arr.sort((a, b) => {
+          const ya = Number(a.dataset.year), yb = Number(b.dataset.year);
+          return sort.value === 'new' ? yb - ya : ya - yb;
+        });
+        arr.forEach((c) => list.appendChild(c));
+      });
+    }
+  }
+
+  initConferences();
+  document.addEventListener('astro:page-load', initConferences); // View Transitions safe
+</script>
