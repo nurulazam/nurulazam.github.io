@@ -229,15 +229,16 @@ const linkFor = (p: typeof pubs[number]) =>
 
   /* List + cards */
   .pub-list { list-style: none; padding: 0; margin: 0; }
-  .pub-card { display: flex; gap: var(--space-s); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-s); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); }
+  .pub-card { display: flex; gap: var(--space-m); padding: var(--space-s) var(--space-m); margin-bottom: var(--space-s); background: var(--surface); border: 1px solid var(--rule); border-radius: var(--radius-lg); }
   .pub-card[hidden] { display: none; }
 
   .pub-thumb { flex: none; }
   /* TOC graphics vary in shape: contain the full figure on a white frame (they're almost
      always on white, so the letterbox blends) with a little padding. box-sizing keeps the
-     frame at 140×105. White in both themes is intentional. */
-  .pub-thumb img { width: 140px; height: 105px; box-sizing: border-box; object-fit: contain; padding: var(--space-3xs); border-radius: var(--radius); display: block; background: #fff; }
-  .pub-thumb-fb { width: 140px; height: 105px; border-radius: var(--radius); background: var(--accent-wash); display: flex; align-items: center; justify-content: center; padding: 0 var(--space-2xs); text-align: center; }
+     frame at 200×150 (4:3); max-width stops it overflowing a narrow card. White in both
+     themes is intentional. */
+  .pub-thumb img { width: 200px; height: 150px; max-width: 100%; box-sizing: border-box; object-fit: contain; padding: var(--space-3xs); border-radius: var(--radius); display: block; background: #fff; }
+  .pub-thumb-fb { width: 200px; height: 150px; max-width: 100%; border-radius: var(--radius); background: var(--accent-wash); display: flex; align-items: center; justify-content: center; padding: 0 var(--space-2xs); text-align: center; }
   .pub-thumb-fb span { font-family: var(--font-ui); font-size: var(--step--1); font-weight: 500; color: var(--accent-ink); }
 
   .pub-body { flex: 1; min-width: 0; }
