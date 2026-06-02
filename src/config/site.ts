@@ -12,7 +12,7 @@ export const SITE = {
   author: 'Nurul Azam',
   lang: 'en',
   // Hero identity line — keep it concrete and specific.
-   identity: 'Booting a recursive machine: synthesise, probe, and infer!',
+   identity: 'Synthesise, probe, infer and repeat!',
   analytics: {
     // GoatCounter endpoint. Register at https://www.goatcounter.com/ and paste your URL here.
     // Leave empty ('') to disable. Stats live in your private dashboard — no on-page counter.
@@ -21,20 +21,16 @@ export const SITE = {
 } as const;
 
 // Primary navigation — the ONLY place nav items are defined.
-// 7 items: the mobile ceiling. Don't add an 8th without rethinking the layout.
 export const NAV: { label: string; href: string }[] = [
   { label: 'Research', href: '/research/' },
   { label: 'Writing', href: '/writing/' },
   { label: 'Software', href: '/software/' },
   { label: 'Publications', href: '/publications/' },
-  { label: 'Conferences', href: '/conferences/' },
   { label: 'Teaching', href: '/teaching/' },
   { label: 'About', href: '/about/' },
 ];
 
-// NOTE: The "Work with me" header CTA has been retired (removed from Header.astro).
-// PRIMARY_CTA is kept here only in case another component still imports it. If nothing
-// references it anymore (check Footer.astro), delete the next line.
+// Exactly ONE primary call-to-action site-wide.
 export const PRIMARY_CTA = { label: 'Work with me', href: '/contact/' } as const;
 
 // Secondary links (footer only).
