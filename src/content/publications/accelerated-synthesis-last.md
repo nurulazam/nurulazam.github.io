@@ -4,6 +4,7 @@ authors: "Nurul Azam, Z. Ahmadi, B. Yakupoglu, S. Elafandi, M. Tian, A. Boulesba
 year: 2019
 venue: "2D Materials (IOP)"
 status: "published"
+featured: true
 doi: "10.1088/2053-1583/ab53f7"
 url: "https://iopscience.iop.org/article/10.1088/2053-1583/ab53f7/meta"
 image: "/images/pubs/LAST1.png"

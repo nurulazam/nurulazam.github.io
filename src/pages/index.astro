@@ -3,7 +3,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import HeroAnimation from "../components/HeroAnimation.astro";
 import { SITE, PRIMARY_CTA } from "../config/site";
 import { getCollection } from "astro:content";
-import pubsData from "../data/publications.json";
 
 // Home page previews include draft entries so placeholder sections stay visible
 // until real content is added.
@@ -19,8 +18,27 @@ const latestPosts = (await getCollection("writing"))
   .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
   .slice(0, 3);
 
-const pubs = pubsData.selected;
-const pubNote: string = (pubsData as { note: string; selected: typeof pubs }).note;
+const allPubs = (await getCollection("publications")).sort(
+  (a, b) => b.data.year - a.data.year
+);
+const featuredPubs = allPubs.filter((p) => p.data.featured);
+// Show featured papers; fall back to the 5 most recent if none are flagged yet.
+const pubs = (featuredPubs.length ? featuredPubs : allPubs).slice(0, 5);
+
+// Split an author string so "Nurul Azam" can be bolded in the template.
+const boldAuthor = (authors: string) => authors.split(/(Nurul Azam)/g);
+
+// Recent talks: only entries Azam presented; newest year first; within a year,
+// invited > talk > poster — so posters only appear as a fallback when talks run out.
+const typeRank = (t: string) => (t === "invited" ? 0 : t === "talk" ? 1 : 2);
+const recentTalks = (await getCollection("conferences"))
+  .filter((c) => c.data.presenter)
+  .sort(
+    (a, b) =>
+      b.data.year - a.data.year ||
+      typeRank(a.data.type) - typeRank(b.data.type)
+  )
+  .slice(0, 3);
 
 const fmt = (d: Date) =>
   d.toLocaleDateString("en-US", { year: "numeric", month: "short", timeZone: "UTC" });
@@ -120,30 +138,82 @@ const pillars = [
     </header>
 
     <ol class="pub-list">
-      {pubs.map((pub) => (
-        <li class="pub">
-          <span class="pub__year ui">{pub.year}</span>
-          <div class="pub__body">
-            <p class="pub__title">{pub.title}</p>
-            <p class="pub__meta ui">
-              {pub.authors}&ensp;·&ensp;<em>{pub.venue}</em>
-            </p>
-            {pub.doi && (
-              <a
-                class="pub__doi ui"
-                href={`https://doi.org/${pub.doi}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                DOI →
-              </a>
-            )}
-          </div>
-        </li>
-      ))}
+      {pubs.map((pub) => {
+        const href =
+          pub.data.url || (pub.data.doi ? `https://doi.org/${pub.data.doi}` : null);
+        return (
+          <li class="pub">
+            <span class="pub__year ui">{pub.data.year}</span>
+            <div class="pub__body">
+              {href ? (
+                <a
+                  class="pub__title pub__title--link"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {pub.data.title}
+                </a>
+              ) : (
+                <p class="pub__title">{pub.data.title}</p>
+              )}
+              <p class="pub__meta ui">
+                {boldAuthor(pub.data.authors).map((seg) =>
+                  seg === "Nurul Azam" ? <strong>{seg}</strong> : seg
+                )}
+                {pub.data.venue && (<>&ensp;·&ensp;<em>{pub.data.venue}</em></>)}
+              </p>
+            </div>
+          </li>
+        );
+      })}
     </ol>
+  </section>
 
-    {pubNote && <p class="pub-note ui">{pubNote}</p>}
+  <!-- ④½ Recent talks ---------------------------------------------------- -->
+  <section class="talks container" aria-label="Recent talks">
+    <header class="section-head">
+      <p class="eyebrow">Recent talks</p>
+      <a class="section-head__link ui" href="/conferences/">All talks →</a>
+    </header>
+
+    <ol class="pub-list">
+      {recentTalks.map((talk) => {
+        const href =
+          talk.data.url || (talk.data.doi ? `https://doi.org/${talk.data.doi}` : null);
+        const typeLabel =
+          talk.data.type === "invited" ? "Invited talk"
+          : talk.data.type === "poster" ? "Poster"
+          : "Talk";
+        return (
+          <li class="pub">
+            <span class="pub__year ui">{talk.data.year}</span>
+            <div class="pub__body">
+              <div class="talk__head">
+                <span class="badge">{typeLabel}</span>
+                <span class="eyebrow">{talk.data.venue}</span>
+              </div>
+              {href ? (
+                <a
+                  class="pub__title pub__title--link"
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {talk.data.title}
+                </a>
+              ) : (
+                <p class="pub__title">{talk.data.title}</p>
+              )}
+              <p class="pub__meta ui">
+                {talk.data.event}
+                {talk.data.location && (<>&ensp;·&ensp;{talk.data.location}</>)}
+              </p>
+            </div>
+          </li>
+        );
+      })}
+    </ol>
   </section>
 
   <!-- ⑤ Scientific software & tools preview ----------------------------- -->
@@ -411,11 +481,29 @@ const pillars = [
     margin-top: var(--space-3xs);
     color: var(--accent-ink);
   }
+  a.pub__title--link {
+    display: block;
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+  a.pub__title--link:hover { color: var(--accent-ink); }
   .pub-note {
     font-size: var(--step--1);
     color: var(--ink-soft);
     font-style: italic;
     margin-top: var(--space-s);
+  }
+
+  /* ── ④½ Recent talks ───────────────────────────────────────────────────── */
+  .talks {
+    padding-block: var(--space-xl);
+    border-top: 1px solid var(--rule);
+  }
+  .talk__head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-s);
+    margin-bottom: var(--space-3xs);
   }
 
   /* ── ⑤ Software preview ────────────────────────────────────────────────── */

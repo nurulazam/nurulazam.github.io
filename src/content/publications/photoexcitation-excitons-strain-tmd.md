@@ -4,6 +4,7 @@ authors: "Navendu Mondal, Nurul Azam, Yuri N. Gartstein, Masoud Mahjouri-Samani,
 year: 2022
 venue: "Advanced Materials"
 status: "published"
+featured: true
 doi: "10.1002/adma.202110568"
 url: "https://advanced.onlinelibrary.wiley.com/doi/abs/10.1002/adma.202110568"
 image: "/images/pubs/Extended_lifetime.png"
