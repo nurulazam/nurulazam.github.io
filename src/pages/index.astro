@@ -1,7 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import HeroAnimation from "../components/HeroAnimation.astro";
-import { SITE, PRIMARY_CTA } from "../config/site";
+import { SITE, SOCIALS } from "../config/site";
 import { getCollection } from "astro:content";
 
 // Home page previews include draft entries so placeholder sections stay visible
@@ -42,6 +42,9 @@ const recentTalks = (await getCollection("conferences"))
 
 const fmt = (d: Date) =>
   d.toLocaleDateString("en-US", { year: "numeric", month: "short", timeZone: "UTC" });
+
+// Connect section: LinkedIn URL comes from the shared SOCIALS list (not hard-coded).
+const linkedin = SOCIALS.find((s) => s.label === "LinkedIn");
 
 const pillars = [
   {
@@ -277,19 +280,32 @@ const pillars = [
     )}
   </section>
 
-  <!-- ⑦ Contact CTA — the ONE primary CTA on the entire site ------------ -->
-  <section class="contact-cta container" aria-label="Get in touch">
-    <div class="contact-cta__inner">
-      <p class="eyebrow">Collaboration</p>
-      <h2 class="contact-cta__title">Interested in working together?</h2>
-      <!-- PLACEHOLDER: replace with your own invitation copy -->
-      <p class="contact-cta__body">
-        Whether you are looking to synthesise a specific 2D or magnetic material,
-        need momentum-microscopy or Raman expertise, or want to collaborate on
-        scientific software — get in touch.
-      </p>
-      <a class="btn-primary" href={PRIMARY_CTA.href}>{PRIMARY_CTA.label}</a>
-    </div>
+  <!-- ⑦ Connect ---------------------------------------------------------- -->
+  <section class="connect container" aria-labelledby="connect-hd">
+    <header class="section-head">
+      <div class="connect__head">
+        <p class="eyebrow">Connect</p>
+        <h2 id="connect-hd" class="connect__title">Interested in my work? Let's connect</h2>
+      </div>
+      {linkedin && (
+        <a
+          class="btn-primary"
+          href={linkedin.href}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Connect on LinkedIn
+        </a>
+      )}
+    </header>
+
+    <p class="connect__body">
+      Whether you have a question, an idea worth comparing, or just a connection
+      worth making, I'm always glad to hear from you.
+    </p>
+    <p class="connect__email ui">
+      or write me at <a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+    </p>
   </section>
 
 </BaseLayout>
@@ -583,24 +599,34 @@ const pillars = [
     white-space: nowrap;
   }
 
-  /* ── ⑦ Contact CTA ─────────────────────────────────────────────────────── */
-  .contact-cta {
-    padding-block: var(--space-2xl);
+  /* ── ⑦ Connect ─────────────────────────────────────────────────────────── */
+  .connect {
+    padding-block: var(--space-xl);
     border-top: 1px solid var(--rule);
   }
-  .contact-cta__inner {
-    max-width: 52ch;
-    margin-inline: auto;
-    text-align: center;
+  /* Centre the LinkedIn button against the stacked eyebrow + heading group. */
+  .connect .section-head { align-items: center; }
+  .connect__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
   }
-  .contact-cta__title {
-    font-size: var(--step-3);
-    margin: var(--space-xs) 0 var(--space-s);
-  }
-  .contact-cta__body {
+  .connect__title { margin: 0; }
+  .connect__body {
     color: var(--ink-soft);
-    margin: 0 0 var(--space-l);
+    max-width: 60ch;
+    margin: 0 0 var(--space-2xs);
   }
+  .connect__email {
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    margin: 0;
+  }
+  .connect__email a {
+    color: var(--accent-ink);
+    text-decoration: none;
+  }
+  .connect__email a:hover { text-decoration: underline; }
   .btn-primary {
     display: inline-block;
     padding: var(--space-s) var(--space-l);
@@ -647,7 +673,6 @@ const pillars = [
       gap: var(--space-3xs);
     }
     .post-item time { display: none; }
-    .contact-cta__inner { text-align: left; }
   }
 
   /* < 480px: pub year column narrower */

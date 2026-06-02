@@ -1,9 +1,10 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { SITE } from "../../config/site";
 
 // Phase 1 is static — contact is a plain mailto, no form backend.
-const EMAIL = "nurul_azam@outlook.com";
+const EMAIL = SITE.email;
 ---
 <BaseLayout title="Contact" description="Get in touch with Dr. Nurul Azam about collaboration in quantum-materials synthesis, characterisation, or scientific software.">
   <div class="container contact">

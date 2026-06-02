@@ -10,6 +10,7 @@ export const SITE = {
     'understand and optimise them.',
   url: 'https://nurulazam.github.io',
   author: 'Nurul Azam',
+  email: 'nurul_azam@outlook.com',
   lang: 'en',
   // Hero identity line — keep it concrete and specific.
    identity: 'Synthesise, probe, infer and repeat!',
