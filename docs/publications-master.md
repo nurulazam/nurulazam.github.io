@@ -16,6 +16,7 @@ This is the human-readable **source of truth** for the Publications page. It hol
 ## Durable notes
 
 - **Citation count** is shown on the page and updated by hand — currently 662 (Google Scholar). The live value is `const CITATIONS` in `src/pages/publications/index.astro`.
+- **Homepage "Selected publications"** surfaces the five papers flagged `featured: true` in their content files (newest first): **#1** Time-Resolved Growth of 2D WSe₂ (2023), **#2** Laser-Assisted MoSe₂ with Tunable Vacancies (2022), **#5** Photoexcitation Dynamics / Long-lived Excitons (2022), **#8** 2D-Material FET Biosensor for COVID-19 (2021), **#3** Accelerated Synthesis by LAST (2019). This flag does **not** affect the `/publications/` page, which sorts by year. To change the homepage set, edit `featured` in `src/content/publications/`.
 - **Pub 13** (gamma irradiation, *Applied Physics Letters*) uses DOI `10.1063/5.0006919` — don't confuse it with Pub 7's ACS DOI.
 - **Image filenames are case-sensitive** (GitHub Pages). The five `.gif` TOC graphics are static images, not animations.
 - **One spelling per tag** — e.g. use `PLD`, never also `Pulsed Laser Deposition`, or the filter chips fragment.
@@ -86,7 +87,11 @@ Two-dimensional (2D) layered materials including transition metal dichalcogenide
 ## 4 · Laser-based synthesis of atomically thin monolayer 2D quantum materials
 `2021 · SPIE (proceedings) · Published`
 
-> ⚠️ Also appears as Conference #10. Pending your decision: list as Publication, Conference, or both.
+> ✅ **RESOLVED (June 2026):** listed in **both** collections. Content files exist as
+> `src/content/publications/laser-based-synthesis-spie.md` and
+> `src/content/conferences/spie-2021-laser-based-synthesis-monolayer-2d.md`
+> (see conferences-master decision #4). *(Original note: "Also appears as Conference #10.
+> Pending your decision: list as Publication, Conference, or both.")*
 
 **Authors** — Nurul Azam, Z. Ahmadi, M. Mahjouri-Samani
 **DOI** — [10.1117/12.2579102](https://doi.org/10.1117/12.2579102)
@@ -219,7 +224,9 @@ Interest in layered two-dimensional (2D) materials has been escalating rapidly o
 ## 13 · Monolayer 2D quantum materials subjected to gamma irradiation in high vacuum for nuclear and space applications
 `2020 · Applied Physics Letters · Published`
 
-> ✅ DOI/URL corrected (the entry had Pub 7's ACS link). Author Mahjouri-Samani added per the published record — please confirm.
+> ✅ **RESOLVED (June 2026):** DOI/URL corrected (the entry had Pub 7's ACS link).
+> Author Mahjouri-Samani is confirmed in the published record and present in the content
+> file `src/content/publications/gamma-irradiation-space.md` (DOI `10.1063/5.0006919`).
 
 **Authors** — S. Elafandi, R. Christiansen, Nurul Azam, M. Cichon, M. Park, M. C. Hamilton, Masoud Mahjouri-Samani
 **DOI** — [10.1063/5.0006919](https://doi.org/10.1063/5.0006919)
@@ -293,7 +300,10 @@ Direct growth and patterning of atomically thin two-dimensional (2D) materials o
 ## 18 · Magneto-Crystalline Anisotropy in Multi-Oriented MnSb Thin Films for Multifunctional Device Applications
 `2025 · journal TBD · Under review (close to acceptance)`
 
-> Updated per your note — new title and expanded author list. The **conference version (Conf #3)** still uses the earlier working title *"Synthesis and Nitrogen-Vacancy Magnetometry of ferromagnetic MnSb."*
+> ✅ **RESOLVED (June 2026):** new title and expanded author list applied in the content file
+> `src/content/publications/mnsb-magnetocrystalline-anisotropy.md`. The **conference version
+> (Conf #3)** still uses the earlier working title *"Synthesis and Nitrogen-Vacancy Magnetometry
+> of ferromagnetic MnSb"* (content file `nacmbe-2025-mnsb-nv-magnetometry.md`) — intentional.
 
 **Authors** — Nurul Azam, Jeffrey Rable, Rajnandini Sharma, Salihu Ahmad, Syed Mohammad Shahed, Imrankhan Mulani, Wentao Liang, David Budil, Sugata Chowdhury, Alberto De la Torre, Arun Bansil, Swastik Kar
 **DOI** — *(none yet — under review)*

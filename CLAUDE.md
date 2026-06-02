@@ -63,9 +63,8 @@ through the owner's *own* scientific motifs — never a generic AI look.
 ```
 src/
   config/site.ts        Single source of truth: site meta, NAV, PRIMARY_CTA, SOCIALS, analytics.
-  content.config.ts     Zod schemas for the writing / research / software collections.
+  content.config.ts     Zod schemas for the writing / research / software / publications / theses / conferences collections.
   content/              Markdown/MDX content, one folder per collection.
-  data/                 Static data files (e.g. publications.json).
   layouts/              BaseLayout (HTML shell), ArticleLayout (post template). Page structure only.
   components/           Reusable UI. Small, single-purpose, token-driven.
   pages/                Routes. Thin — compose layouts + components + content.

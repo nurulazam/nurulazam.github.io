@@ -69,10 +69,15 @@ the deploy workflow, and GoatCounter wiring. Tasks below build the real site on 
   Scientific Software** subsection; build-log posts use `ArticleLayout`.
 - **Done when:** section reads as scientific software, not a career pivot; cards are uniform.
 
-### Task 8 — Publications
+### Task 8 — Publications ✅ DONE
 - **Touch:** `src/pages/publications/index.astro`, `src/data/publications.json`.
 - **Do:** render the static JSON list with DOI/links; group by year; link to Scholar/ORCID.
 - **Done when:** list is accurate to the data file; no invented entries or citation counts.
+- **Note (June 2026):** the mechanism changed — publications are now a **content collection**
+  (`src/content/publications/*.md`, one file per paper, abstract in the body), **not** a JSON
+  file. `src/data/publications.json` has been deleted. The page reads from the collection,
+  filters by topic/material/technique, and shows a hand-updated citation count. Theses live in
+  a sibling `theses` collection. See MAINTENANCE.md §8 / §16.
 
 ### Task 9 — Teaching & Mentoring (+ Mentoring Philosophy)
 - **Touch:** `src/pages/teaching/index.astro`.
@@ -95,6 +100,14 @@ the deploy workflow, and GoatCounter wiring. Tasks below build the real site on 
 - **Do:** keyboard/contrast/alt audit; image optimisation (AVIF/WebP, lazy, `srcset`); confirm
   mobile LCP target; final responsive check at 360/768/1280px.
 - **Done when:** Lighthouse a11y ≥ 95, no console errors, deploy is green.
+
+---
+
+**Added outside the original plan (June 2026):** a **Conferences** feature — the `conferences`
+content collection (28 entries), the `/conferences/` page (mirrors Publications, with a Conference
+journal fed by Writing "Field Notes"), and a Conferences nav link in `site.ts` — plus a homepage
+**Recent talks** section (presented-only, newest first, invited → talk → poster, top 3). These were
+not tasks in the list above. See conferences-master.md and MAINTENANCE.md §9.
 
 ---
 

@@ -2,7 +2,7 @@
 ## nurulazam.github.io — Dr. Nurul Azam's Research Website
 
 **For:** Anyone maintaining or updating this site
-**Last updated:** May 2026
+**Last updated:** June 2026
 **Live site:** https://nurulazam.github.io
 **Repository:** https://github.com/nurulazam/nurulazam.github.io
 
@@ -18,17 +18,18 @@
 6. [How to Add a Research Entry](#6-how-to-add-a-research-entry)
 7. [How to Add a Software Project](#7-how-to-add-a-software-project)
 8. [How to Update Publications](#8-how-to-update-publications)
-9. [How to Update the CV](#9-how-to-update-the-cv)
-10. [Updating Site Configuration](#10-updating-site-configuration)
-11. [Design System — Changing Colours, Fonts, Spacing](#11-design-system--changing-colours-fonts-spacing)
-12. [Images and Assets](#12-images-and-assets)
-13. [Deploying Changes (Automatic)](#13-deploying-changes-automatic)
-14. [Analytics (GoatCounter)](#14-analytics-goatcounter)
-15. [Content Schemas — Full Reference](#15-content-schemas--full-reference)
-16. [Going Live — Removing Draft Mode](#16-going-live--removing-draft-mode)
-17. [Troubleshooting](#17-troubleshooting)
-18. [What NOT to Touch](#18-what-not-to-touch)
-19. [Phase 2 — Planned Features](#19-phase-2--planned-features)
+9. [How to Add a Conference Entry](#9-how-to-add-a-conference-entry)
+10. [How to Update the CV](#10-how-to-update-the-cv)
+11. [Updating Site Configuration](#11-updating-site-configuration)
+12. [Design System — Changing Colours, Fonts, Spacing](#12-design-system--changing-colours-fonts-spacing)
+13. [Images and Assets](#13-images-and-assets)
+14. [Deploying Changes (Automatic)](#14-deploying-changes-automatic)
+15. [Analytics (GoatCounter)](#15-analytics-goatcounter)
+16. [Content Schemas — Full Reference](#16-content-schemas--full-reference)
+17. [Going Live — Removing Draft Mode](#17-going-live--removing-draft-mode)
+18. [Troubleshooting](#18-troubleshooting)
+19. [What NOT to Touch](#19-what-not-to-touch)
+20. [Phase 2 — Planned Features](#20-phase-2--planned-features)
 
 ---
 
@@ -54,12 +55,13 @@ This is a **static website** built with [Astro 5](https://astro.build). "Static"
 | Write a blog post | 5 min | §5 |
 | Add a research entry | 5 min | §6 |
 | Add a software project | 5 min | §7 |
-| Update publications list | 10 min | §8 |
-| Replace the CV PDF | 2 min | §9 |
-| Change nav links | 2 min | §10 |
-| Change the accent colour | 2 min | §11 |
-| Deploy changes | 1 min (push + 60s auto) | §13 |
-| View analytics | Instant | §14 |
+| Add / update a publication | 10 min | §8 |
+| Add a conference talk or poster | 5 min | §9 |
+| Replace the CV PDF | 2 min | §10 |
+| Change nav links | 2 min | §11 |
+| Change the accent colour | 2 min | §12 |
+| Deploy changes | 1 min (push + 60s auto) | §14 |
+| View analytics | Instant | §15 |
 
 ### The universal workflow
 
@@ -131,10 +133,10 @@ nurulazam.github.io/
 │   ├── content/               ← ★ All content lives here as Markdown files
 │   │   ├── writing/           ←   Blog posts
 │   │   ├── research/          ←   Research entries
-│   │   └── software/          ←   Software projects
-│   │
-│   ├── data/
-│   │   └── publications.json  ← ★ Publications list — edit this JSON file
+│   │   ├── software/          ←   Software projects
+│   │   ├── publications/      ←   Peer-reviewed papers (one file per paper)
+│   │   ├── conferences/       ←   Talks & posters (one file per entry)
+│   │   └── theses/            ←   Theses & dissertations
 │   │
 │   ├── styles/
 │   │   ├── tokens.css         ← ★ Colours, fonts, spacing — edit here to retheme
@@ -150,13 +152,14 @@ nurulazam.github.io/
 └── package.json               ←   Dependencies and scripts
 ```
 
-### The four files you edit most
+### The files you edit most
 
 | File | What you change there |
 |---|---|
 | `src/content/writing/*.md` | Blog posts |
 | `src/content/research/*.md` | Research entries |
-| `src/data/publications.json` | Publications list |
+| `src/content/publications/*.md` | Publications (one file per paper) |
+| `src/content/conferences/*.md` | Conference talks & posters |
 | `src/config/site.ts` | Nav, socials, bio identity line |
 
 ---
@@ -211,7 +214,7 @@ The key idea is that a focused laser beam provides localised thermal energy...
 Fast synthesis enables...
 ```
 
-You can also add images (see §12).
+You can also add images (see §13).
 
 ### Frontmatter fields
 
@@ -335,63 +338,373 @@ Description of the tool, what problem it solves, how to use it...
 
 ## 8. How to Update Publications
 
-Publications are stored in a single JSON file: `src/data/publications.json`.
+> Publications are **no longer** stored in a single JSON file. They are now a
+> **content collection** — one Markdown file per paper — exactly like Writing,
+> Research, and Software. The old `src/data/publications.json` has been removed.
 
-Open it in any text editor. The structure looks like this:
+The Publications page (`/publications/`) lists peer-reviewed papers as cards —
+representative image on the left; title, authors, venue, abstract, and tags on
+the right. Visitors can filter by topic / material / technique and sort by year.
+A separate **Theses & Dissertations** block sits at the bottom.
 
-```json
-{
-  "note": "Verify against Google Scholar before publishing.",
-  "selected": [
-    {
-      "year": 2023,
-      "authors": "N. Azam, M. Mahjouri-Samani",
-      "title": "Time-Resolved Growth of 2D WSe2 Monolayer Crystals",
-      "venue": "ACS Nano",
-      "doi": "10.1021/acsnano.xxxxxxx"
-    },
-    {
-      "year": 2022,
-      "authors": "N. Azam, et al.",
-      "title": "Laser-Assisted Synthesis of Monolayer 2D MoSe2 Crystals with Tunable Vacancy Concentrations",
-      "venue": "ACS Applied Nano Materials",
-      "doi": ""
-    }
-  ]
-}
+### Where everything lives
+
+| Path | What it is |
+|---|---|
+| `src/content/publications/*.md` | ★ One file per paper. **This is what you edit.** |
+| `src/content/theses/*.md` | ★ One file per thesis (PhD, Master's). |
+| `public/images/pubs/` | ★ Representative (TOC) images for papers. |
+| `src/pages/publications/index.astro` | The page itself — layout, filters, sort. Rarely edit (only the citation count, see §8.6). |
+| `src/content.config.ts` | The schema (field names + types). Edit only to add a new field. |
+
+The universal workflow still applies — after any change:
+
+```bash
+git add .
+git commit -m "publications: add <short description>"
+git push
 ```
 
-### Adding a new publication
+The site rebuilds and goes live automatically in about 60 seconds.
 
-Copy an existing entry and add it to the array. Keep them sorted **newest year first**.
+### 8.1 How to add a new publication
 
-```json
-{
-  "year": 2026,
-  "authors": "N. Azam, et al.",
-  "title": "Full title of your new paper",
-  "venue": "Journal Name",
-  "doi": "10.xxxx/xxxxxxx"
-}
+**Step 1 — Create a file.** Add a new `.md` in `src/content/publications/`.
+The filename is just an internal ID (it does not appear in any URL), so use
+lowercase letters, numbers, and hyphens:
+
+```
+src/content/publications/mose2-strain-tuning.md
 ```
 
-### Adding a DOI
+**Step 2 — Add the frontmatter** (metadata between the `---` lines), then write
+the **abstract as the body** below it:
 
-When a DOI is available, fill in the `doi` field (just the DOI identifier, not the full URL):
+```markdown
+---
+title: "Strain-Tunable Excitons in Monolayer MoSe₂"
+authors: "Nurul Azam, A. Coauthor, Masoud Mahjouri-Samani"
+year: 2026
+venue: "ACS Nano"
+status: "published"
+doi: "10.1021/acsnano.xxxxxxx"
+url: "https://pubs.acs.org/doi/abs/10.1021/acsnano.xxxxxxx"
+image: "/images/pubs/mose2_strain.png"
+imageAlt: "Graphical abstract: strain-tunable excitons in MoSe2"
+topics: ["Optics & Excitons"]
+materials: ["MoSe2"]
+techniques: ["Laser-assisted synthesis"]
+keywords: ["2D materials", "strain", "excitons"]
+---
 
-```json
-"doi": "10.1021/acsnano.3c09821"
+Put the full abstract here as ordinary paragraphs. It is shown on the card,
+clamped to two lines, and expands in full when the reader clicks "Show abstract".
 ```
 
-The site automatically renders it as a clickable link. If the field is empty (`""`), no link appears.
+**Step 3 — Add the image** (optional). Drop the TOC graphic into
+`public/images/pubs/` and point `image:` at `/images/pubs/<filename>`. See §8.5.
 
-### Removing the placeholder note
+**Step 4 — Deploy.**
 
-Once you have verified all entries against your Google Scholar profile, delete the `"note"` field from `publications.json`. The caveat notice will disappear from the published page.
+```bash
+git add .
+git commit -m "publications: add MoSe2 strain-tuning paper"
+git push
+```
+
+> **The abstract is the body, not a frontmatter field.** Everything below the
+> closing `---` is the abstract. Leave the body empty for papers that aren't
+> published yet — the card then shows "Abstract available on publication."
+
+### 8.2 Frontmatter field reference
+
+| Field | Required | Type | Notes |
+|---|---|---|---|
+| `title` | ✅ | text | Card heading. |
+| `authors` | ✅ | text | Comma-separated string. "Nurul Azam" is **auto-bolded** on the page — type it exactly that way. Co-first-author notes are fine in-line, e.g. `Nurul Azam (co-first author)`. |
+| `year` | ✅ | number | Drives the sort. Use the integer year only. |
+| `venue` | — | text | Journal or proceedings name. Omit for unpublished work. |
+| `status` | — | `published` \| `under-review` \| `in-preparation` | Default `published`. See §8.3. |
+| `doi` | — | text | **Bare identifier only**, e.g. `10.1021/acsnano.3c02280` — not the full URL. The page builds the `https://doi.org/...` link. |
+| `url` | — | URL | Canonical page link. If set, the title links here; otherwise it falls back to the DOI link. |
+| `image` | — | path | `/images/pubs/<file>`. Omit to show a fallback tile. |
+| `imageAlt` | — | text | Alt text. Set it whenever `image` is set. |
+| `topics` | — | list | Primary filter axis. See §8.4. |
+| `materials` | — | list | Secondary filter axis (the specific compound). |
+| `techniques` | — | list | Secondary filter axis (method/probe). |
+| `keywords` | — | list | Extra search terms; not shown as chips. |
+| `featured` | — | true/false | Default `false`. Flags a paper for the **homepage** "Selected publications" list (see §8.8). Does **not** change the `/publications/` page, which always sorts by `year`. |
+
+> **Don't host PDFs.** The site never hosts a copy of the paper. The title and
+> DOI link out to the publisher. This is deliberate and applies to every entry.
+
+### 8.3 The `status` field
+
+| Value | On the page |
+|---|---|
+| `published` | No badge. Title links to `url`/`doi`. Shows its image. |
+| `under-review` | "Under review" badge. Fallback tile (usually no image yet). Title is plain text if there's no link. |
+| `in-preparation` | "In preparation" badge. Fallback tile. Plain-text title. |
+
+**When a paper gets accepted/published**, edit its file: change `status` to
+`published`, fill in `doi`/`url`, add the `image`, and paste the abstract into
+the body. Commit and push.
+
+### 8.4 The tag system (three axes)
+
+Tags drive the filter chips. There are three independent lists. **Topic** is the
+always-visible filter row; **Material** and **Technique** sit behind the
+"More filters" toggle. All three are free text — typing a new value creates a new
+chip automatically, so future areas need no code change.
+
+**Topic** — the research theme:
+`Synthesis` · `Optics & Excitons` · `Devices & Sensing` · `Thermal Transport` · `Magnetism` · `Topology` · `Radiation / Space`
+
+**Material** — the specific compound:
+`MoS2` · `MoSe2` · `WS2` · `WSe2` · `GaSe` · `NiTe2` · `MnSb` · `TMDCs` (umbrella — use only on general/review papers)
+
+**Technique** — the method or probe:
+`Laser-assisted synthesis` · `Laser ablation` · `PLD` · `MBE` · `CVD` · `LASER CVD` · `Momentum microscopy` · `Raman spectroscopy` · `NV magnetometry` · `Vacancy engineering`
+
+> **Keep one spelling per concept.** A chip is created for every distinct
+> string, so `PLD` and `Pulsed Laser Deposition` would make two separate chips.
+> Reuse the exact spellings above. Capitalisation matters.
+
+A paper can carry several tags on each axis — it then appears under every one of
+them. Filtering shows one active tag at a time; "All" resets.
+
+### 8.5 Images
+
+- **Location:** `public/images/pubs/`. Reference as `/images/pubs/<filename>`.
+- **Filenames are case-sensitive** (GitHub Pages serves them that way). The
+  `image:` value must match the file exactly, including capitals and extension.
+- **Formats:** `.jpg`, `.png`, `.webp`, or `.gif` (static GIFs render as ordinary
+  images). Journal **TOC / graphical-abstract** images are the ideal source.
+- **Keep them small** — under ~1 MB, ideally ~600–800 px wide; they display at
+  140 × 105.
+- **No image?** Leave `image:` out and the card shows a tinted fallback tile
+  (the status or venue name) — never a broken image.
+
+### 8.6 Updating the citation count
+
+The headline "N citations on Google Scholar" is updated by hand (Google Scholar
+has no usable API, and the site is static). Open
+`src/pages/publications/index.astro` and edit the one line near the top:
+
+```js
+const CITATIONS = 662; // Google Scholar, updated manually
+```
+
+Change the number, commit, push. The number links to your Scholar profile, which
+is pulled automatically from `SOCIALS` in `src/config/site.ts`.
+
+### 8.7 Theses & Dissertations
+
+Theses live in their own collection (`src/content/theses/`) and render in a
+separate block at the bottom of the page — they are **not** part of the
+numbered, filterable paper list (a thesis isn't a journal article).
+
+Add or edit a file like this:
+
+```markdown
+---
+title: "Thesis Title Here"
+degree: "Ph.D., Electrical & Computer Engineering"
+institution: "Auburn University, Auburn, Alabama"
+year: 2022
+advisor: "Advisor Name"
+url: "https://www.proquest.com/openview/..."
+tags: ["Synthesis", "Laser-assisted synthesis"]
+---
+```
+
+No body/abstract is needed. The `url` links out (e.g. ProQuest); no thesis PDF is
+hosted on the site, same rule as papers.
+
+### 8.8 Homepage "Selected publications"
+
+The homepage (`/`) shows a short **Selected publications** list. It is driven by
+the `featured` flag, **not** by year:
+
+- Papers with `featured: true` in their frontmatter are surfaced, newest first,
+  up to five. (Currently five are flagged.)
+- If no paper is flagged, the homepage falls back to the five most recent.
+- Each title links to its `url` (or the DOI link as a fallback), and "Nurul Azam"
+  is bolded — the same conventions as the `/publications/` page.
+
+To change which papers appear on the homepage, set or remove `featured: true` on
+the relevant files in `src/content/publications/`. This does not affect the
+`/publications/` page, which always lists every paper sorted by year.
+
+### 8.9 How the page behaves (reference)
+
+- **Order:** newest year first by default; the **Sort** dropdown flips to oldest-first.
+- **Filtering:** one active chip at a time across all three axes; "All" resets.
+  "More filters" reveals the Material and Technique rows.
+- **Abstracts:** clamped to two lines; "Show abstract" expands the full text.
+- **Author emphasis:** "Nurul Azam" is bolded automatically in every author line.
+- **Links:** title → `url`, else `https://doi.org/<doi>`; entries with neither
+  show a plain (unlinked) title.
+- **Search:** abstracts are inside the page body, so site search (Pagefind)
+  indexes them.
+
+### 8.10 Troubleshooting
+
+| Symptom | Fix |
+|---|---|
+| New paper doesn't appear | Confirm the file is in `src/content/publications/`, has `.md`, valid frontmatter, and a `year`. Confirm the push went green in the Actions tab. |
+| Build fails after editing a paper | A frontmatter field is missing or the wrong type — the build error names the file and field. Common cause: `year` written as text, or `status` not one of the three allowed values. |
+| Image is broken | Check the filename **case** and extension match the file in `public/images/pubs/` exactly, and that the path starts with `/images/pubs/`. |
+| A filter chip is missing or duplicated | A tag is misspelled or capitalised differently from §8.4. Make the spelling identical across papers. |
+| Title isn't a link | The entry has no `url` and no `doi`. Add one (papers in prep are unlinked by design). |
+| Citation number is stale | Edit `const CITATIONS` in `src/pages/publications/index.astro` (§8.6). |
+
+### 8.11 Quick reference
+
+| Task | Where | Time |
+|---|---|---|
+| Add a paper | new `.md` in `src/content/publications/` | 5 min |
+| Mark a paper published | edit its `.md`: `status`, `doi`/`url`, `image`, abstract body | 3 min |
+| Feature a paper on the homepage | set `featured: true` in its `.md` (§8.8) | 1 min |
+| Add/replace a TOC image | `public/images/pubs/` + set `image:` | 2 min |
+| Add a new tag/filter | type it in a paper's `topics`/`materials`/`techniques` | 1 min |
+| Update citation count | `const CITATIONS` in the page file (§8.6) | 1 min |
+| Add a thesis | new `.md` in `src/content/theses/` | 3 min |
 
 ---
 
-## 9. How to Update the CV
+## 9. How to Add a Conference Entry
+
+Conference talks and posters live as Markdown files in `src/content/conferences/`,
+one file per entry — the same pattern as Publications. The page at `/conferences/`
+lists them newest-first with filter chips (venue, plus Invited / Presented / Co-authored)
+and a "Conference journal" section at the bottom.
+
+> **Source of truth:** the full dataset is kept in `docs/conferences-master.md`. When you
+> add or change an entry, update both that file and the content file (or regenerate the
+> content files from the master).
+
+### Step 1 — Create a new file
+
+```
+src/content/conferences/spie-2027-new-quantum-talk.md
+                        ↑
+        filename convention: <venue>-<year>-<short-slug>
+```
+
+Use lowercase letters, numbers, and hyphens only. No spaces.
+
+### Step 2 — Add the frontmatter
+
+Conference entries have **no body** — everything is in the frontmatter between the `---` lines:
+
+```markdown
+---
+title: "Full title of the talk or poster"
+authors: "First Author, Nurul Azam, Third Author"
+year: 2027
+venue: "SPIE"
+event: "SPIE Photonics West 2027 (Proc. SPIE 14000, art. 1400001)"
+location: "San Francisco, CA"
+type: "talk"
+presenter: true
+presenterName: "Nurul Azam"
+doi: "10.1117/12.xxxxxxx"
+topics: ["Synthesis"]
+materials: ["WSe2"]
+techniques: ["Laser-assisted synthesis"]
+---
+```
+
+### Frontmatter fields
+
+| Field | Required | Values | Notes |
+|---|---|---|---|
+| `title` | ✅ Yes | Any text | Quote it if it contains a colon |
+| `authors` | ✅ Yes | Author string | "Nurul Azam" is auto-bolded on the page |
+| `year` | ✅ Yes | Number (e.g. `2027`) | Drives newest-first sort |
+| `venue` | ✅ Yes | See below | The filter-chip group |
+| `event` | ✅ Yes | Full conference / proceedings name | Shown in the meta line |
+| `location` | No | `"City, ST"` or `"Virtual (Online Only)"` | |
+| `type` | ✅ Yes | `invited` · `talk` · `poster` | Sets the badge |
+| `presenter` | No | `true` / `false` | Did **Nurul Azam** present it? Default `true` |
+| `presenterName` | No | Name | Who presented — shown as "· presented by …" |
+| `doi` | No | Bare identifier, e.g. `10.1117/12.3078960` | SPIE entries; renders a DOI link on the title |
+| `url` | No | Full URL | Abstract / event page (e.g. APS `meetings.aps.org/link/…`) |
+| `poster` | No | `/posters/<slug>.pdf` | Scanned hard copy; shows a "View poster" link |
+| `topics` | No | `["Synthesis"]` | Secondary filter (under "+ More filters") |
+| `materials` | No | `["NiTe2"]` | Secondary filter |
+| `techniques` | No | `["Momentum microscopy"]` | Secondary filter |
+| `featured` | No | `true` / `false` | Reserved; default `false` |
+
+### Field notes that matter
+
+- **`presenter` vs `presenterName`.** `presenter` is the boolean that powers the
+  **Presented / Co-authored** filter. `presenterName` is just the text shown in brackets.
+  When you presented, set `presenter: true` and `presenterName: "Nurul Azam"` (it renders in
+  the accent colour). When a co-author presented, set `presenter: false` and name them.
+- **`doi` vs `url`.** SPIE papers use `doi` (the bare identifier — no `https://doi.org/`).
+  APS abstracts and other event pages use `url` (a full link). If an entry has neither, the
+  title shows as plain text. **Never set `url: ""`** — an empty string is not a valid URL and
+  the build will fail. Omit the field instead.
+- **`venue`.** Any value works and becomes a filter chip automatically. Keep one spelling per
+  venue (`SPIE`, `APS`, `MRS`, `NACMBE`, `ICALEO`, `ECS`, `Texas STEM`, `CNMS`, `Showcase` are
+  the ones in use). The first five show first; new ones append.
+
+### Adding a poster scan
+
+1. Scan the hard copy as a PDF (or image).
+2. Save it to `public/posters/<slug>.pdf` (matching the entry filename keeps it tidy).
+3. Set `poster: "/posters/<slug>.pdf"` in that entry's frontmatter.
+
+The card then shows a **View poster** link. Leave `poster` empty (or omit it) and no link appears.
+
+### The Conference journal
+
+The journal section at the bottom of `/conferences/` does **not** use a separate engine — it
+reuses the Writing collection. To add a journal note, write a normal blog post in
+`src/content/writing/` with:
+
+```markdown
+---
+category: "Field Notes"
+---
+```
+
+It appears both in the Conference journal and in `/writing/`. Until the first Field Note exists,
+the section shows a quiet "No field notes yet."
+
+### Homepage "Recent talks"
+
+The homepage (`/`) shows a **Recent talks** section drawn from this collection. It is built
+automatically — there is nothing to flag:
+
+- Only entries you **presented** are shown (`presenter: true`).
+- They are sorted newest year first, and within a year ranked **invited → talk → poster**
+  (so a poster only appears if there aren't enough talks).
+- The top **three** are shown, each linking to its `url`/`doi`, with an "All talks →" link to
+  `/conferences/`.
+
+Adding a new presented talk for the current year will push it onto the homepage automatically.
+
+### Step 3 — Deploy
+
+```bash
+git add .
+git commit -m "conferences: add <short description>"
+git push
+```
+
+Live at `https://nurulazam.github.io/conferences/` in about 60 seconds.
+
+### Schema reference
+
+Defined in `src/content.config.ts` as the `conferences` collection — see §16 for the full
+schema alongside the other collections.
+
+---
+
+## 10. How to Update the CV
 
 The CV download button on the About page links to `/cv.pdf`.
 
@@ -410,7 +723,7 @@ git push
 
 ---
 
-## 10. Updating Site Configuration
+## 11. Updating Site Configuration
 
 All site-wide settings live in **one file**: `src/config/site.ts`
 
@@ -442,6 +755,7 @@ export const NAV: { label: string; href: string }[] = [
   { label: 'Writing', href: '/writing/' },
   { label: 'Software', href: '/software/' },
   { label: 'Publications', href: '/publications/' },
+  { label: 'Conferences', href: '/conferences/' },
   { label: 'Teaching', href: '/teaching/' },
   { label: 'About', href: '/about/' },
 ];
@@ -480,7 +794,7 @@ Change the URL if you ever move to a different GoatCounter account.
 
 ---
 
-## 11. Design System — Changing Colours, Fonts, Spacing
+## 12. Design System — Changing Colours, Fonts, Spacing
 
 All visual settings live in **one file**: `src/styles/tokens.css`
 
@@ -539,7 +853,7 @@ To change a font:
 
 ---
 
-## 12. Images and Assets
+## 13. Images and Assets
 
 ### Where to put images
 
@@ -580,11 +894,11 @@ Keep images under **1 MB** wherever possible. For photographs, export at 1600px 
 
 ### The CV
 
-Place at `public/cv.pdf` (see §9).
+Place at `public/cv.pdf` (see §10).
 
 ---
 
-## 13. Deploying Changes (Automatic)
+## 14. Deploying Changes (Automatic)
 
 Deployment is **fully automatic**. You never manually upload files.
 
@@ -642,7 +956,7 @@ git push --force          # ⚠️ only use if you're sure
 
 ---
 
-## 14. Analytics (GoatCounter)
+## 15. Analytics (GoatCounter)
 
 The site uses [GoatCounter](https://www.goatcounter.com) for privacy-friendly analytics.
 
@@ -659,7 +973,7 @@ You will see page views, referrers, and countries. Stats update in real time.
 
 ---
 
-## 15. Content Schemas — Full Reference
+## 16. Content Schemas — Full Reference
 
 ### Writing (`src/content/writing/*.md`)
 
@@ -707,21 +1021,75 @@ draft: false                  # Optional
 ---
 ```
 
-### Publications (`src/data/publications.json`)
+### Publications (`src/content/publications/*.md`)
 
-```json
-{
-  "year": 2023,              // Required — integer
-  "authors": "N. Azam, ...", // Required — author string
-  "title": "Full title",     // Required
-  "venue": "ACS Nano",       // Required — journal or conference name
-  "doi": "10.1021/..."       // Optional — leave "" if not yet available
-}
+One Markdown file per paper; the **abstract is the body** below the frontmatter. See §8.
+
+```markdown
+---
+title: "Required"
+authors: "Required — comma-separated; 'Nurul Azam' is auto-bolded"
+year: 2023                    # Required — integer (drives sort)
+venue: "ACS Nano"             # Optional — journal / proceedings
+status: "published"           # Optional — published | under-review | in-preparation
+doi: "10.1021/..."            # Optional — bare identifier, not the full URL
+url: "https://..."            # Optional — canonical link (title falls back to DOI)
+image: "/images/pubs/fig.png" # Optional — TOC graphic
+imageAlt: "Alt text"          # Required IF image is set
+topics: ["Synthesis"]         # Optional — primary filter axis
+materials: ["MoSe2"]          # Optional — secondary filter axis
+techniques: ["Laser-assisted synthesis"]  # Optional — secondary filter axis
+keywords: ["2D materials"]    # Optional — extra search terms (not shown as chips)
+featured: false               # Optional — true surfaces it on the homepage (see §8.8)
+---
+
+Abstract text goes here as the body.
+```
+
+### Theses (`src/content/theses/*.md`)
+
+No body needed; renders in its own block at the bottom of `/publications/`. See §8.7.
+
+```markdown
+---
+title: "Required"
+degree: "Ph.D., Electrical & Computer Engineering"   # Required
+institution: "Auburn University, Auburn, Alabama"    # Required
+year: 2022                    # Required — integer
+advisor: "Advisor Name"       # Optional
+url: "https://www.proquest.com/..."  # Optional — repository link
+tags: ["Synthesis"]           # Optional
+---
+```
+
+### Conferences (`src/content/conferences/*.md`)
+
+No body; everything is in the frontmatter. See §9.
+
+```markdown
+---
+title: "Required"
+authors: "Required — 'Nurul Azam' is auto-bolded"
+year: 2026                    # Required — integer (drives sort)
+venue: "SPIE"                 # Required — filter-chip group
+event: "Full conference / proceedings name"  # Required
+location: "San Francisco, CA" # Optional
+type: "invited"               # Required — invited | talk | poster
+presenter: true               # Optional — did Azam present? Default true
+presenterName: "Nurul Azam"   # Optional — who presented (bracket text)
+doi: "10.1117/12...."         # Optional — SPIE bare identifier
+url: "https://..."            # Optional — abstract / event page (never set to "")
+poster: "/posters/slug.pdf"   # Optional — scanned hard copy
+topics: ["Topology"]          # Optional
+materials: ["NiTe2"]          # Optional
+techniques: ["Momentum microscopy"]  # Optional
+featured: false               # Optional — reserved
+---
 ```
 
 ---
 
-## 16. Going Live — Removing Draft Mode
+## 17. Going Live — Removing Draft Mode
 
 When you are ready to make real content public:
 
@@ -764,13 +1132,13 @@ rm src/content/software/example-arpes-viewer.md
 
 ---
 
-## 17. Troubleshooting
+## 18. Troubleshooting
 
 ### "npm: command not found"
 Node.js is not installed. Download it from https://nodejs.org (LTS version).
 
 ### "npm run dev" shows an error about a missing field
-A content file has an invalid or missing frontmatter field. Read the error message — it tells you exactly which file and field. Fix the frontmatter to match the schema in §15.
+A content file has an invalid or missing frontmatter field. Read the error message — it tells you exactly which file and field. Fix the frontmatter to match the schema in §16.
 
 ### Build fails with "getStaticPaths" error
 Usually means a Markdown file has broken frontmatter — a missing `---` or an invalid value. Open the file mentioned in the error.
@@ -791,11 +1159,11 @@ This is stored in the browser's `localStorage`. If a user is in private/incognit
 The file `public/cv.pdf` is missing or incorrectly named. Make sure the filename is exactly `cv.pdf` (lowercase) in the `public/` folder.
 
 ### I accidentally pushed broken code
-Roll back using Git (see §13). If the deploy is already running, it will fail with a red cross in Actions — the live site stays at the last successful deploy until a working build is pushed.
+Roll back using Git (see §14). If the deploy is already running, it will fail with a red cross in Actions — the live site stays at the last successful deploy until a working build is pushed.
 
 ---
 
-## 18. What NOT to Touch
+## 19. What NOT to Touch
 
 These files and folders are critical infrastructure. Editing them without understanding the full system can break the site.
 
@@ -815,7 +1183,7 @@ These files and folders are critical infrastructure. Editing them without unders
 
 ---
 
-## 19. Phase 2 — Planned Features
+## 20. Phase 2 — Planned Features
 
 These features are designed and ready to build, but not yet implemented. They require a backend (Supabase/PostgreSQL) and are planned for a future phase.
 

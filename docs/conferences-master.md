@@ -575,8 +575,14 @@ Open editorial items (non-blocking, UI choices to confirm at build): venue-chip 
 
 ## Build steps (after all venues are in)
 
-1. Add the `conferences` collection to `content.config.ts` (schema above).
-2. Generate `src/content/conferences/*.md` from the YAML blocks here.
-3. Build `src/pages/conferences/index.astro` mirroring Publications (newest-first; chips = Invited + venue; "+ More filters" for material/technique; type badges; presenter shown in brackets; DOI/abstract link).
-4. Add the Conference journal section querying Writing `Field Notes`.
-5. Update `MAINTENANCE.md` with a Conferences section.
+**All steps complete (June 2026).**
+
+1. ✅ Add the `conferences` collection to `content.config.ts` (schema above).
+2. ✅ Generate `src/content/conferences/*.md` from the YAML blocks here (28 files).
+3. ✅ Build `src/pages/conferences/index.astro` mirroring Publications (newest-first; chips = Invited + venue; "+ More filters" for material/technique; type badges; presenter shown in brackets; DOI/abstract link).
+4. ✅ Add the Conference journal section querying Writing `Field Notes`.
+5. ✅ Update `MAINTENANCE.md` with a Conferences section (now §9).
+
+Also done: ✅ **Conferences nav link** added to `NAV` in `src/config/site.ts` (after Publications),
+and ✅ a homepage **Recent talks** section (presented-only, newest first, invited → talk → poster,
+top 3) reads from this collection.
