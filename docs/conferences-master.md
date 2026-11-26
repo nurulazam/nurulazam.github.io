@@ -149,7 +149,7 @@ title: "2D materials-based biosensor for detecting COVID-19 virus"
 authors: "Parvin Fathi-Hafshejani, Nurul Azam, Suman Jaiswal, Lu Wang, Marcelo Kuroda, Michael Hamilton, Sahar Hasim, Masoud Mahjouri-Samani"
 year: 2023
 venue: "SPIE"
-event: "SPIE Photonics West 2023 — Frontiers in Biological Detection: From Nanosensors to Systems XV (Proc. SPIE PC12397, art. PC1239707)"
+event: "SPIE Photonics West 2023, Frontiers in Biological Detection: From Nanosensors to Systems XV (Proc. SPIE PC12397, art. PC1239707)"
 location: "San Francisco, CA"
 type: "talk"
 presenter: false
@@ -166,7 +166,7 @@ title: "Photoexcitation dynamics and long-lived excitons in strain-engineered tr
 authors: "Anton Malko, Navendu Mondal, Nurul Azam, Yuri Gartstein, Masoud Mahjouri-Samani"
 year: 2023
 venue: "SPIE"
-event: "SPIE Photonics West 2023 — Nanoscale and Quantum Materials (Proc. SPIE PC12410, art. PC1241003)"
+event: "SPIE Photonics West 2023, Nanoscale and Quantum Materials (Proc. SPIE PC12410, art. PC1241003)"
 location: "San Francisco, CA"
 type: "talk"
 presenter: false
@@ -183,7 +183,7 @@ title: "Achieving sub-seconds growth of monolayer WSe2 crystals with time-resolv
 authors: "Nurul Azam, Masoud Mahjouri-Samani"
 year: 2022
 venue: "SPIE"
-event: "SPIE Photonics West 2022 — Nanoscale and Quantum Materials (Proc. SPIE PC11990, art. PC1199002)"
+event: "SPIE Photonics West 2022, Nanoscale and Quantum Materials (Proc. SPIE PC11990, art. PC1199002)"
 location: "San Francisco, CA"
 type: "talk"
 presenter: true
@@ -200,7 +200,7 @@ title: "Monolayer WSe2 field-effect transistor biosensor for detecting COVID-19 
 authors: "Parvin Fathi-Hafshejani, Nurul Azam, Lu Wang, Marcelo Kuroda, Michael Hamilton, Sahar Hasim, Masoud Mahjouri-Samani"
 year: 2022
 venue: "SPIE"
-event: "SPIE Photonics West 2022 — Nanoscale and Quantum Materials (Proc. SPIE PC11990, art. PC119900L)"
+event: "SPIE Photonics West 2022, Nanoscale and Quantum Materials (Proc. SPIE PC11990, art. PC119900L)"
 location: "San Francisco, CA"
 type: "talk"
 presenter: false
@@ -219,7 +219,7 @@ title: "Gas-phase formation of 2D GaSe quantum dot ensembles in a nonequilibrium
 authors: "Salah Elafandi, Zabihollah Ahmadi, Nurul Azam, Masoud Mahjouri-Samani"
 year: 2021
 venue: "SPIE"
-event: "SPIE LASE 2021 — Synthesis and Photonics of Nanoscale Materials XVIII (Proc. SPIE 11675, art. 1167507)"
+event: "SPIE LASE 2021, Synthesis and Photonics of Nanoscale Materials XVIII (Proc. SPIE 11675, art. 1167507)"
 location: "Virtual (Online Only)"
 type: "talk"
 presenter: true
@@ -237,7 +237,7 @@ title: "Laser-based synthesis of atomically thin monolayer 2D quantum materials"
 authors: "Nurul Azam, Zabihollah Ahmadi, Masoud Mahjouri-Samani"
 year: 2021
 venue: "SPIE"
-event: "SPIE LASE 2021 — Synthesis and Photonics of Nanoscale Materials XVIII (Proc. SPIE 11675, art. 116750F)"
+event: "SPIE LASE 2021, Synthesis and Photonics of Nanoscale Materials XVIII (Proc. SPIE 11675, art. 116750F)"
 location: "Virtual (Online Only)"
 type: "talk"
 presenter: true
@@ -401,7 +401,7 @@ title: "Optical and Magnetic Properties of Fe-infused 2D-MoS2"
 authors: "Yujia Wang, Nurul Azam, Jeff Rable, Syed Mohammad Shahed, Z. B. Hennighausen, Jing Kong, J. P. Ferrier, Matthew Matzelle, Bernardo Barbiellini, Barun Ghosh, Arun Bansil, Swastik Kar"
 year: 2024
 venue: "MRS"
-event: "MRS Fall Meeting 2024 — 2D Materials: Nanofabrication and Applications"
+event: "MRS Fall Meeting 2024, 2D Materials: Nanofabrication and Applications"
 location: "Boston, MA"
 type: "talk"
 presenter: false

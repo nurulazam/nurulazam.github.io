@@ -3,7 +3,7 @@ title: "Gas-phase formation of 2D GaSe quantum dot ensembles in a nonequilibrium
 authors: "Salah Elafandi, Zabihollah Ahmadi, Nurul Azam, Masoud Mahjouri-Samani"
 year: 2021
 venue: "SPIE"
-event: "SPIE LASE 2021 — Synthesis and Photonics of Nanoscale Materials XVIII (Proc. SPIE 11675, art. 1167507)"
+event: "SPIE LASE 2021, Synthesis and Photonics of Nanoscale Materials XVIII (Proc. SPIE 11675, art. 1167507)"
 location: "Virtual (Online Only)"
 type: "talk"
 presenter: true

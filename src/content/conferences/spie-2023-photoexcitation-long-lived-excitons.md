@@ -3,7 +3,7 @@ title: "Photoexcitation dynamics and long-lived excitons in strain-engineered tr
 authors: "Anton Malko, Navendu Mondal, Nurul Azam, Yuri Gartstein, Masoud Mahjouri-Samani"
 year: 2023
 venue: "SPIE"
-event: "SPIE Photonics West 2023 — Nanoscale and Quantum Materials (Proc. SPIE PC12410, art. PC1241003)"
+event: "SPIE Photonics West 2023, Nanoscale and Quantum Materials (Proc. SPIE PC12410, art. PC1241003)"
 location: "San Francisco, CA"
 type: "talk"
 presenter: false
