@@ -6,6 +6,8 @@ material: ["MnSb"]
 physics: ["Magnetism", "MBE growth", "Magnetic sensing"]
 status: "published"
 draft: false
+cover: "/images/Paper/APL_MnSb_paper.png"
+coverAlt: "Figure from the Applied Physics Letters paper on multi-oriented MnSb thin films"
 ---
 
 MnSb is a magnet that stays magnetic far above room temperature, and like a grain of wood, it has preferred directions: its magnetism lines up more easily along some crystal axes than others. Crystal growers usually chase perfectly uniform films. I led a study that took the opposite route, growing MnSb on GaAs by molecular beam epitaxy so that it forms tiny crystalline islands pointing in two different directions, and then asking what that mix does to its magnetism.

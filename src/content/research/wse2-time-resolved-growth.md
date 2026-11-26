@@ -6,6 +6,8 @@ material: ["WSe2"]
 physics: ["Laser synthesis", "Time-resolved growth", "Crystal growth kinetics"]
 status: "published"
 draft: false
+cover: "/images/Paper/Time-resolved.png"
+coverAlt: "Graphical abstract: time-resolved laser-assisted growth of monolayer WSe2 crystals"
 ---
 
 Atomically thin crystals such as monolayer WSe₂ are mostly grown by chemical vapor deposition, a process that takes tens of minutes to hours. That is fine for making crystals, but it hides how they form: after the run, there is no way to know when each crystal was born or how long it grew. A small flake might have started early and then shrunk as it re-evaporated, or it might simply have nucleated late. To catch the real kinetics of 2D growth, you need to switch the process on and off in milliseconds, something no conventional method can do.

@@ -6,6 +6,8 @@ material: ["MnTe"]
 physics: ["Altermagnetism", "Raman spectroscopy", "Surface oxidation", "MBE growth"]
 status: "in-progress"
 draft: false
+cover: "/images/Paper/MnTe_paper_arXiv.png"
+coverAlt: "Figure from the arXiv paper on the origin of Raman peaks in alpha-MnTe"
 ---
 
 α-MnTe is one of the most exciting materials in magnetism right now. It is an altermagnet, a recently recognized kind of magnet whose spins cancel out overall yet still split its electrons by spin. For years, its Raman spectrum has shown two strong peaks that theory says should not be there, and the community has argued over what they mean. I led a study, together with collaborators across five institutions, to settle the question.

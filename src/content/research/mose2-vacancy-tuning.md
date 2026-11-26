@@ -6,6 +6,8 @@ material: ["MoSe2"]
 physics: ["Laser synthesis", "Vacancy engineering", "Sensing"]
 status: "published"
 draft: false
+cover: "/images/Paper/Vacancy_Tuning.png"
+coverAlt: "Graphical abstract: laser-assisted synthesis of MoSe2 with tunable vacancy concentrations"
 ---
 
 The surfaces of atomically thin crystals such as monolayer MoSe₂ are chemically shy: gas molecules and biomolecules barely stick, which is a poor trait for sensors. Missing atoms change that. A selenium vacancy gives a passing molecule something to grab onto, so the stronger the binding, the sharper the sensor's response. The catch is making vacancies on demand. The usual route (blasting a finished crystal with electron beams, ions, or plasma) etches it as it damages it, and conventional growth simply leaves vacancies wherever they happen to land.

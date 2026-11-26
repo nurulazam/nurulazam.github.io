@@ -42,6 +42,7 @@
   --accent-ink:  #9E3A14;  /* accent that stays legible as text on paper */
   --accent-wash: #FBEADF;  /* faint accent fill */
   --lattice:     rgba(27, 26, 23, 0.045); /* hex-lattice motif tint */
+  --figure-bg:   #FFFFFF;  /* White in both themes on purpose: journal figures are drawn on white */
 
   /* Effects */
   --radius:           4px;

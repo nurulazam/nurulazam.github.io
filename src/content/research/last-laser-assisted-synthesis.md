@@ -6,6 +6,8 @@ material: ["MoS2", "MoSe2", "WS2", "WSe2"]
 physics: ["Laser synthesis"]
 status: "published"
 draft: false
+cover: "/images/Paper/Accelerated_synthesis.png"
+coverAlt: "Graphical abstract: accelerated laser-assisted synthesis of 2D crystals from stoichiometric powders"
 ---
 
 Crystals just three atoms thick, such as MoS₂, promise smaller electronics and new kinds of optical devices. Growing them, however, is notoriously fiddly. Conventional methods mix separate metal and chalcogen sources with carrier and reaction gases, so every new material means long rounds of trial and error. The obvious shortcut, vaporizing the finished compound and letting it recrystallize, looked impossible: the powder needs around 1400 °C to vaporize, while the crystals grow best hundreds of degrees cooler.

@@ -13,7 +13,7 @@ const sub = (s: string) => s.replace(/[0-9]/g, (d) => "₀₁₂₃₄₅₆₇�
 <li class="card">
   <div class="card__illo">
     {entry.data.cover ? (
-      <img src={entry.data.cover} alt={entry.data.coverAlt ?? entry.data.title} loading="lazy" />
+      <img class="card__cover" src={entry.data.cover} alt={entry.data.coverAlt ?? entry.data.title} loading="lazy" />
     ) : (
       <span class="card__illo-ph lattice-bg" aria-hidden="true">
         <span class="ui">Illustration</span>
@@ -57,7 +57,17 @@ const sub = (s: string) => s.replace(/[0-9]/g, (d) => "₀₁₂₃₄₅₆₇�
 
   /* Illustration slot */
   .card__illo { aspect-ratio: 16 / 10; background: var(--bg); }
-  .card__illo img { width: 100%; height: 100%; object-fit: cover; }
+  /* Figures vary in shape: contain the whole figure on a white frame (white in both
+     themes via --figure-bg) with a little padding; the 16/10 slot keeps the grid aligned. */
+  .card__cover {
+    display: block;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    object-fit: contain;
+    padding: var(--space-2xs);
+    background: var(--figure-bg);
+  }
   .card__illo-ph { display: grid; place-items: center; width: 100%; height: 100%; }
   .card__illo-ph .ui {
     font-size: var(--step--1);
