@@ -6,6 +6,8 @@ venue: "arXiv preprint (arXiv:2609.19467)"
 status: "under-review"
 doi: "10.48550/arXiv.2609.19467"
 url: "https://arxiv.org/abs/2609.19467"
+image: "/images/pubs/MnTe_TOC_Image.png"
+imageAlt: "Graphical abstract: air oxidation of α-MnTe forming a manganese oxide layer over buried tellurium"
 topics: ["Magnetism"]
 materials: ["MnTe"]
 techniques: ["MBE", "Raman spectroscopy", "Momentum microscopy"]

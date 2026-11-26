@@ -6,6 +6,8 @@ venue: "APL Electronic Devices"
 status: "published"
 doi: "10.1063/5.0325583"
 url: "https://pubs.aip.org/aip/aed/article/2/3/036107/3398549"
+image: "/images/pubs/MnSb_TOC_Image.png"
+imageAlt: "Graphical abstract: multi-oriented MnSb islands on GaAs (111) and their anisotropic magnetic response"
 topics: ["Synthesis", "Magnetism"]
 materials: ["MnSb"]
 techniques: ["MBE", "NV magnetometry"]
