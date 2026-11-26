@@ -1,0 +1,117 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  entry: CollectionEntry<"research">;
+}
+
+const { entry } = Astro.props;
+
+// Chemical-formula display: digits → unicode subscripts (NiTe2 → NiTe₂).
+const sub = (s: string) => s.replace(/[0-9]/g, (d) => "₀₁₂₃₄₅₆₇₈₉"[Number(d)]);
+---
+<li class="card">
+  <div class="card__illo">
+    {entry.data.cover ? (
+      <img src={entry.data.cover} alt={entry.data.coverAlt ?? entry.data.title} loading="lazy" />
+    ) : (
+      <span class="card__illo-ph lattice-bg" aria-hidden="true">
+        <span class="ui">Illustration</span>
+      </span>
+    )}
+  </div>
+  <div class="card__body">
+    <div class="card__badges">
+      {entry.data.draft && <span class="badge">Draft</span>}
+      {entry.data.status === "in-progress" && (
+        <span class="badge badge--soft">In progress</span>
+      )}
+    </div>
+    <h3 class="card__title">
+      <a href={`/research/${entry.id}/`}>{entry.data.title}</a>
+    </h3>
+    <p class="card__desc">{entry.data.description}</p>
+    <ul class="card__tags" aria-label="Topics">
+      {entry.data.material.map((m) => (
+        <li class="tag tag--mat">{sub(m)}</li>
+      ))}
+      {entry.data.physics.map((p) => (
+        <li class="tag tag--phys">{p}</li>
+      ))}
+    </ul>
+  </div>
+</li>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: border-color var(--transition-base);
+  }
+  .card:hover { border-color: var(--ink-soft); }
+
+  /* Illustration slot */
+  .card__illo { aspect-ratio: 16 / 10; background: var(--bg); }
+  .card__illo img { width: 100%; height: 100%; object-fit: cover; }
+  .card__illo-ph { display: grid; place-items: center; width: 100%; height: 100%; }
+  .card__illo-ph .ui {
+    font-size: var(--step--1);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    padding: var(--space-m);
+  }
+  .card__badges { display: flex; flex-wrap: wrap; gap: var(--space-2xs); }
+  .card__title { font-size: var(--step-1); margin: var(--space-3xs) 0 0; }
+  .card__title a {
+    color: var(--ink);
+    text-decoration: none;
+    transition: color var(--transition-base);
+  }
+  /* Stretched link: whole card clickable, single link in the a11y tree. */
+  .card__title a::after { content: ""; position: absolute; inset: 0; }
+  .card:hover .card__title a { color: var(--accent-ink); }
+  .card__desc { color: var(--ink-soft); margin: 0; font-size: var(--step-0); }
+
+  .card__tags {
+    list-style: none;
+    margin: var(--space-2xs) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+  }
+  .tag {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    padding: var(--space-3xs) var(--space-xs);
+    border-radius: 99px;
+    line-height: 1.5;
+  }
+  .tag--mat { background: var(--accent-wash); color: var(--accent-ink); }
+  .tag--phys { border: 1px solid var(--rule); color: var(--ink-soft); }
+
+  .badge {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    font-weight: 500;
+    padding: 1px var(--space-xs);
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+    border-radius: var(--radius);
+    line-height: 1.6;
+  }
+  .badge--soft { background: transparent; border: 1px solid var(--rule); color: var(--ink-soft); }
+</style>

@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import ResearchCard from "../../components/ResearchCard.astro";
 import { getCollection } from "astro:content";
 
 // Phase 1: drafts included (clearly badged) so the example renders. Switch to
@@ -34,7 +35,10 @@ function groupBy(axis: "material" | "physics") {
     }));
 }
 
+// "All" lists every entry exactly once (no groups); the other two are the
+// grouped dual-axis views. `entries` is already newest-first.
 const views = [
+  { axis: "all" as const, label: "All", groups: null },
   { axis: "material" as const, label: "By material", groups: groupBy("material") },
   { axis: "physics" as const, label: "By physics", groups: groupBy("physics") },
 ];
@@ -46,7 +50,7 @@ const views = [
     <header class="research__head">
       <h1>Research</h1>
       <p class="lede">
-        The same body of work, two ways in — browse <strong>by material</strong>
+        All my research at a glance, or browse it <strong>by material</strong>
         or <strong>by physics</strong>.
       </p>
     </header>
@@ -61,7 +65,7 @@ const views = [
               class="axis-btn"
               data-axis={v.axis}
               aria-controls={`panel-${v.axis}`}
-              aria-pressed={v.axis === "material" ? "true" : "false"}
+              aria-pressed={v.axis === "all" ? "true" : "false"}
             >
               {v.label}
             </button>
@@ -73,52 +77,26 @@ const views = [
             class="axis-panel"
             id={`panel-${view.axis}`}
             data-axis={view.axis}
-            aria-label={`Research ${view.label.toLowerCase()}`}
-            hidden={view.axis !== "material"}
+            aria-label={view.axis === "all" ? "All research" : `Research ${view.label.toLowerCase()}`}
+            hidden={view.axis !== "all"}
           >
-            {view.groups.map((group) => (
-              <section class="group">
-                <h2 class="group__title">
-                  <span class="group__name">{group.label}</span>
-                  <span class="group__count ui">{group.entries.length}</span>
-                </h2>
-                <ol class="research-grid">
-                  {group.entries.map((entry) => (
-                    <li class="card">
-                      <div class="card__illo">
-                        {entry.data.cover ? (
-                          <img src={entry.data.cover} alt={entry.data.coverAlt ?? entry.data.title} loading="lazy" />
-                        ) : (
-                          <span class="card__illo-ph lattice-bg" aria-hidden="true">
-                            <span class="ui">Illustration</span>
-                          </span>
-                        )}
-                      </div>
-                      <div class="card__body">
-                        <div class="card__badges">
-                          {entry.data.draft && <span class="badge">Draft</span>}
-                          {entry.data.status === "in-progress" && (
-                            <span class="badge badge--soft">In progress</span>
-                          )}
-                        </div>
-                        <h3 class="card__title">
-                          <a href={`/research/${entry.id}/`}>{entry.data.title}</a>
-                        </h3>
-                        <p class="card__desc">{entry.data.description}</p>
-                        <ul class="card__tags" aria-label="Topics">
-                          {entry.data.material.map((m) => (
-                            <li class="tag tag--mat">{sub(m)}</li>
-                          ))}
-                          {entry.data.physics.map((p) => (
-                            <li class="tag tag--phys">{p}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            ))}
+            {view.groups ? (
+              view.groups.map((group) => (
+                <section class="group">
+                  <h2 class="group__title">
+                    <span class="group__name">{group.label}</span>
+                    <span class="group__count ui">{group.entries.length}</span>
+                  </h2>
+                  <ol class="research-grid">
+                    {group.entries.map((entry) => <ResearchCard entry={entry} />)}
+                  </ol>
+                </section>
+              ))
+            ) : (
+              <ol class="research-grid">
+                {entries.map((entry) => <ResearchCard entry={entry} />)}
+              </ol>
+            )}
           </section>
         ))}
       </>
@@ -188,78 +166,6 @@ const views = [
   @media (min-width: 640px) { .research-grid { grid-template-columns: repeat(2, 1fr); } }
   @media (min-width: 980px) { .research-grid { grid-template-columns: repeat(3, 1fr); } }
 
-  .card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    background: var(--surface);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    transition: border-color var(--transition-base);
-  }
-  .card:hover { border-color: var(--ink-soft); }
-
-  /* Illustration slot */
-  .card__illo { aspect-ratio: 16 / 10; background: var(--bg); }
-  .card__illo img { width: 100%; height: 100%; object-fit: cover; }
-  .card__illo-ph { display: grid; place-items: center; width: 100%; height: 100%; }
-  .card__illo-ph .ui {
-    font-size: var(--step--1);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-soft);
-  }
-
-  .card__body {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2xs);
-    padding: var(--space-m);
-  }
-  .card__badges { display: flex; flex-wrap: wrap; gap: var(--space-2xs); }
-  .card__title { font-size: var(--step-1); margin: var(--space-3xs) 0 0; }
-  .card__title a {
-    color: var(--ink);
-    text-decoration: none;
-    transition: color var(--transition-base);
-  }
-  /* Stretched link: whole card clickable, single link in the a11y tree. */
-  .card__title a::after { content: ""; position: absolute; inset: 0; }
-  .card:hover .card__title a { color: var(--accent-ink); }
-  .card__desc { color: var(--ink-soft); margin: 0; font-size: var(--step-0); }
-
-  .card__tags {
-    list-style: none;
-    margin: var(--space-2xs) 0 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs);
-  }
-  .tag {
-    font-family: var(--font-ui);
-    font-size: var(--step--1);
-    padding: var(--space-3xs) var(--space-xs);
-    border-radius: 99px;
-    line-height: 1.5;
-  }
-  .tag--mat { background: var(--accent-wash); color: var(--accent-ink); }
-  .tag--phys { border: 1px solid var(--rule); color: var(--ink-soft); }
-
-  .badge {
-    font-family: var(--font-ui);
-    font-size: var(--step--1);
-    font-weight: 500;
-    padding: 1px var(--space-xs);
-    background: var(--accent-wash);
-    color: var(--accent-ink);
-    border-radius: var(--radius);
-    line-height: 1.6;
-  }
-  .badge--soft { background: transparent; border: 1px solid var(--rule); color: var(--ink-soft); }
-
   .empty { color: var(--ink-soft); font-style: italic; padding-block: var(--space-m); }
 
   .sr-only {
@@ -269,8 +175,8 @@ const views = [
 </style>
 
 <script>
-  // Progressive enhancement: reveal the toggle and switch between the two
-  // already-rendered panels. Without JS the "By material" panel stands alone.
+  // Progressive enhancement: reveal the toggle and switch between the three
+  // already-rendered panels. Without JS the "All" panel stands alone.
   const toggle = document.querySelector<HTMLElement>(".axis-toggle");
   const panels = Array.from(document.querySelectorAll<HTMLElement>(".axis-panel"));
 
@@ -282,25 +188,27 @@ const views = [
     function show(axis: string, announce: boolean) {
       panels.forEach((p) => { p.hidden = p.dataset.axis !== axis; });
       buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.axis === axis)));
-      if (announce && status) status.textContent = `Browsing research by ${axis}.`;
+      if (announce && status) {
+        status.textContent = axis === "all" ? "Showing all research." : `Browsing research by ${axis}.`;
+      }
     }
 
     buttons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        const axis = btn.dataset.axis ?? "material";
+        const axis = btn.dataset.axis ?? "all";
         show(axis, true);
-        history.replaceState(null, "", axis === "material" ? location.pathname : `#by=${axis}`);
+        history.replaceState(null, "", axis === "all" ? location.pathname : `#by=${axis}`);
       });
     });
 
     toggle.hidden = false;
 
-    // Honour a #by=physics deep link.
-    let initial = "material";
+    // Honour #by=material / #by=physics deep links; bare path is "All".
+    let initial = "all";
     if (location.hash.startsWith("#by=")) {
       const axis = decodeURIComponent(location.hash.slice(4));
       if (known.has(axis)) initial = axis;
     }
-    if (initial !== "material") show(initial, false);
+    if (initial !== "all") show(initial, false);
   }
 </script>
