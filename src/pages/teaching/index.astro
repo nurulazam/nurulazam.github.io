@@ -1,111 +1,282 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Breadcrumbs from "../../components/Breadcrumbs.astro";
+import { getCollection } from "astro:content";
 import { WRITING_CATEGORIES } from "../../config/site";
+import {
+  TEACHING_INTRO,
+  TEACHING_STATS,
+  PHILOSOPHY,
+  EXPERIENCE,
+  COURSES,
+  NEW_COURSES,
+  MENTORING,
+  OUTREACH,
+} from "../../data/teaching";
 
-// Link to the evolving "Mentoring Philosophy" thread via the writing index's
-// #cat= filter. Category name comes from site.ts so it stays in sync.
-const MENTORING = WRITING_CATEGORIES.find((c) => c === "Mentoring Philosophy") ?? "Mentoring Philosophy";
-const philosophyHref = `/writing/#cat=${encodeURIComponent(MENTORING)}`;
-
-// PLACEHOLDER records — replace with the real teaching/mentoring history.
-// No invented facts: rows are clearly marked until real content is added.
-const teaching = [
-  { role: "PLACEHOLDER — Course or teaching role", org: "PLACEHOLDER — Institution", term: "PLACEHOLDER — Term" },
-  { role: "PLACEHOLDER — Course or teaching role", org: "PLACEHOLDER — Institution", term: "PLACEHOLDER — Term" },
-];
-
-const mentoring = [
-  { role: "PLACEHOLDER — Mentee level (e.g. undergraduate / graduate)", focus: "PLACEHOLDER — Project focus" },
-  { role: "PLACEHOLDER — Mentee level", focus: "PLACEHOLDER — Project focus" },
-];
+// Link to the Mentoring Philosophy thread via the writing index's #cat= filter.
+// Only rendered when at least one published post exists in that category, so the
+// link never points at an empty filter.
+const MENTORING_CATEGORY =
+  WRITING_CATEGORIES.find((c) => c === "Mentoring Philosophy") ?? "Mentoring Philosophy";
+const philosophyPosts = await getCollection(
+  "writing",
+  ({ data }) => data.category === MENTORING_CATEGORY && !data.draft
+);
+const philosophyHref = `/writing/#cat=${encodeURIComponent(MENTORING_CATEGORY)}`;
 ---
-<BaseLayout title="Teaching & Mentoring" description="Teaching record, research mentoring, and an evolving philosophy on mentorship and technology.">
-  <div class="container teaching">
+<BaseLayout title={TEACHING_INTRO.title} description={TEACHING_INTRO.lede}>
+  <div class="container tch">
     <Breadcrumbs crumbs={[{ label: "Home", href: "/" }, { label: "Teaching" }]} />
 
-    <header class="teaching__head">
-      <h1>Teaching &amp; Mentoring</h1>
-      <p class="lede">
-        Training students in the craft of growing and measuring quantum
-        materials — and in the scientific software that supports the work.
-      </p>
+    <header class="tch__head">
+      <h1>{TEACHING_INTRO.title}</h1>
+      <p class="lede">{TEACHING_INTRO.lede}</p>
     </header>
 
-    <section class="record" aria-labelledby="teaching-hd">
-      <h2 id="teaching-hd" class="record__title">Teaching</h2>
-      <ul class="entry-list">
-        {teaching.map((t) => (
-          <li class="entry">
-            <p class="entry__role">{t.role}</p>
-            <p class="entry__meta ui">{t.org}<span aria-hidden="true"> · </span>{t.term}</p>
+    <div class="tch-stats">
+      <dl class="tch-stats__list">
+        {TEACHING_STATS.map((s) => (
+          <div class="tch-stat">
+            <dt class="tch-stat__label">{s.label}</dt>
+            <dd class="tch-stat__value">{s.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+
+    <section class="tch-section" aria-labelledby="philosophy-hd">
+      <h2 id="philosophy-hd">Teaching Philosophy</h2>
+      <div class="tch-philosophy">
+        {PHILOSOPHY.map((p) => (
+          <div class="tch-philosophy__item">
+            <h3>{p.heading}</h3>
+            <p>{p.body}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="tch-section" aria-labelledby="experience-hd">
+      <h2 id="experience-hd">Teaching Experience</h2>
+      <ul class="tch-experience">
+        {EXPERIENCE.map((e) => (
+          <li class="tch-experience__item">
+            <h3>{e.role}</h3>
+            <p class="tch-meta">{e.institution}</p>
+            <ul class="tch-chips" aria-label="Courses">
+              {e.courses.map((c) => <li class="tch-chip">{c}</li>)}
+            </ul>
+            <p>{e.body}</p>
           </li>
         ))}
       </ul>
     </section>
 
-    <section class="record" aria-labelledby="mentoring-hd">
-      <h2 id="mentoring-hd" class="record__title">Mentoring</h2>
-      <ul class="entry-list">
-        {mentoring.map((m) => (
-          <li class="entry">
-            <p class="entry__role">{m.role}</p>
-            <p class="entry__meta ui">{m.focus}</p>
+    <section class="tch-section" aria-labelledby="courses-hd">
+      <h2 id="courses-hd">Courses I Can Teach</h2>
+      {COURSES.map((g) => (
+        <div class="tch-group">
+          <h3>{g.group}</h3>
+          <ul class="tch-grid">
+            {g.items.map((c) => (
+              <li class="tch-card">
+                <h4>{c.title}</h4>
+                <p>{c.body}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
+
+    <section class="tch-section" aria-labelledby="new-courses-hd">
+      <h2 id="new-courses-hd">New Courses in Development</h2>
+      <ul class="tch-grid tch-grid--feature">
+        {NEW_COURSES.map((c) => (
+          <li class="tch-card tch-card--feature">
+            <h3>{c.title}</h3>
+            <p>{c.body}</p>
+            <p class="tch-badge-row"><span class="tch-badge">Level: {c.level}</span></p>
           </li>
         ))}
       </ul>
     </section>
 
-    <!-- The philosophy thread — reachable as a writing category. -->
-    <section class="philosophy" aria-labelledby="philosophy-hd">
-      <p class="eyebrow">Ongoing thread</p>
-      <h2 id="philosophy-hd" class="philosophy__title">Mentoring Philosophy</h2>
-      <p class="philosophy__body">
-        An evolving set of notes on mentorship and technology — how I think about
-        teaching, supervising, and building people up alongside the science.
-      </p>
-      <a class="philosophy__link ui" href={philosophyHref}>
-        Read the Mentoring Philosophy thread →
-      </a>
+    <section class="tch-section tch-prose" aria-labelledby="mentoring-hd">
+      <h2 id="mentoring-hd">Mentoring</h2>
+      <p>{MENTORING.intro}</p>
+
+      <h3>Mentee outcomes</h3>
+      <ul class="tch-list">
+        {MENTORING.outcomes.map((o) => <li>{o}</li>)}
+      </ul>
+
+      <h3>How I mentor</h3>
+      <dl class="tch-approach">
+        {MENTORING.approach.map((a) => (
+          <div class="tch-approach__item">
+            <dt>{a.heading}</dt>
+            <dd>{a.body}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {philosophyPosts.length > 0 && (
+        <p class="tch-more">
+          <a href={philosophyHref}>{MENTORING.philosophyLink}</a>
+        </p>
+      )}
+    </section>
+
+    <section class="tch-section tch-prose" aria-labelledby="outreach-hd">
+      <h2 id="outreach-hd">Outreach</h2>
+      <p>{OUTREACH}</p>
     </section>
   </div>
 </BaseLayout>
 
 <style>
-  .teaching { padding-block: var(--space-xl); }
-  .teaching__head { max-width: var(--measure); margin-block: var(--space-m) var(--space-xl); }
-  .teaching__head h1 { margin-top: var(--space-2xs); }
+  .tch { padding-block: var(--space-xl); }
+  .tch__head { max-width: var(--measure); margin-block: var(--space-m) var(--space-l); }
+  .tch__head h1 { margin-top: var(--space-2xs); }
   .lede { font-size: var(--step-1); color: var(--ink-soft); margin: 0; }
 
-  /* ── Record sections ── */
-  .record { max-width: var(--measure); margin-bottom: var(--space-2xl); }
-  .record__title {
+  /* ── Stats strip ── */
+  .tch-stats {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding-block: var(--space-m);
+    margin-bottom: var(--space-2xl);
+  }
+  .tch-stats__list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-m);
+    margin: 0;
+  }
+  .tch-stat { display: flex; flex-direction: column-reverse; gap: var(--space-3xs); }
+  .tch-stat__value {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--step-4);
+    font-weight: 560;
+    line-height: 1;
+    color: var(--accent-ink);
+  }
+  .tch-stat__label {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+  }
+  @media (min-width: 640px) {
+    .tch-stats__list { grid-template-columns: repeat(3, 1fr); }
+  }
+
+  /* ── Sections ── */
+  .tch-section { margin-bottom: var(--space-2xl); }
+  .tch-section:last-child { margin-bottom: 0; }
+  .tch-section > h2 {
     font-size: var(--step-2);
     padding-bottom: var(--space-2xs);
-    margin-bottom: var(--space-m);
+    margin-bottom: var(--space-l);
     border-bottom: 1px solid var(--rule);
   }
-  .entry-list { list-style: none; margin: 0; padding: 0; }
-  .entry { padding-block: var(--space-m); border-top: 1px solid var(--rule); }
-  .entry:first-child { border-top: none; padding-top: 0; }
-  .entry__role { margin: 0 0 var(--space-3xs); font-size: var(--step-1); }
-  .entry__meta { margin: 0; font-size: var(--step--1); color: var(--ink-soft); }
+  .tch-prose { max-width: var(--measure); }
 
-  /* ── Mentoring Philosophy callout ── */
-  .philosophy {
-    max-width: var(--measure);
-    padding: var(--space-l);
+  /* ── Philosophy ── */
+  .tch-philosophy { display: grid; grid-template-columns: 1fr; gap: var(--space-l); }
+  .tch-philosophy__item h3 { font-size: var(--step-1); margin-bottom: var(--space-2xs); }
+  .tch-philosophy__item p { margin: 0; }
+  @media (min-width: 860px) {
+    .tch-philosophy { grid-template-columns: repeat(2, 1fr); column-gap: var(--space-xl); }
+  }
+
+  /* ── Experience ── */
+  .tch-experience { list-style: none; margin: 0; padding: 0; max-width: var(--measure); }
+  .tch-experience__item { padding-block: var(--space-m); border-top: 1px solid var(--rule); }
+  .tch-experience__item:first-child { border-top: none; padding-top: 0; }
+  .tch-experience__item h3 { font-size: var(--step-1); margin: 0 0 var(--space-3xs); }
+  .tch-experience__item p:last-child { margin: 0; }
+  .tch-meta {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    color: var(--ink-soft);
+    margin: 0 0 var(--space-xs);
+  }
+
+  /* Chips (non-interactive; same look as .pub-tag) */
+  .tch-chips {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs);
+    margin: 0 0 var(--space-xs);
+    padding: 0;
+  }
+  .tch-chip {
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    padding: 0.1rem var(--space-2xs);
+    border-radius: var(--radius);
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+  }
+
+  /* ── Course cards ── */
+  .tch-group + .tch-group { margin-top: var(--space-l); }
+  .tch-group > h3 { font-size: var(--step-1); margin-bottom: var(--space-s); }
+  .tch-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+  .tch-card {
     background: var(--surface);
     border: 1px solid var(--rule);
     border-radius: var(--radius-lg);
+    padding: var(--space-s) var(--space-m);
   }
-  .philosophy__title { font-size: var(--step-2); margin: var(--space-2xs) 0 var(--space-s); }
-  .philosophy__body { color: var(--ink-soft); margin: 0 0 var(--space-m); }
-  .philosophy__link {
-    font-size: var(--step-0);
+  .tch-card h4 { font-size: var(--step-0); margin: 0 0 var(--space-3xs); }
+  .tch-card p { font-size: var(--step--1); color: var(--ink-soft); margin: 0; }
+
+  /* New courses: more prominent (accent rule, larger type) */
+  .tch-grid--feature { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: var(--space-m); }
+  .tch-card--feature {
+    border-left: 3px solid var(--accent);
+    padding: var(--space-m);
+    display: flex;
+    flex-direction: column;
+  }
+  .tch-card--feature h3 { font-size: var(--step-1); margin: 0 0 var(--space-2xs); }
+  .tch-card--feature p { font-size: var(--step-0); }
+  .tch-card--feature .tch-badge-row { margin-top: auto; padding-top: var(--space-s); }
+  .tch-badge {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: var(--step--1);
+    padding: 0.05rem var(--space-2xs);
+    border-radius: var(--radius);
+    background: var(--accent-wash);
     color: var(--accent-ink);
-    text-decoration: none;
-    font-weight: 500;
+    border: 1px solid var(--accent);
   }
-  .philosophy__link:hover { text-decoration: underline; }
+
+  /* ── Mentoring ── */
+  .tch-prose h3 { font-size: var(--step-1); margin: var(--space-l) 0 var(--space-xs); }
+  .tch-list { padding-left: var(--space-m); margin: 0; }
+  .tch-list li + li { margin-top: var(--space-2xs); }
+  .tch-approach { margin: 0; display: grid; gap: var(--space-s); }
+  .tch-approach dt {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .tch-approach dd { margin: var(--space-3xs) 0 0; }
+  .tch-more { margin: var(--space-l) 0 0; font-family: var(--font-ui); font-size: var(--step-0); }
+  .tch-more a { text-decoration: none; font-weight: 500; }
+  .tch-more a:hover { text-decoration: underline; }
 </style>
